@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { api } from '../services/api'
+import { api, defaultAuthConfig } from '../services/api'
+import AuthConfigFields from '../components/AuthConfigFields.vue'
 
 const router = useRouter()
 
@@ -9,6 +10,7 @@ const name = ref('')
 const openApiUrl = ref('')
 const file = ref<File | null>(null)
 const mode = ref<'url' | 'file'>('url')
+const auth = ref(defaultAuthConfig())
 
 const importing = ref(false)
 const error = ref<string | null>(null)
@@ -31,10 +33,10 @@ async function submit() {
   importing.value = true
   try {
     const project = mode.value === 'url'
-      ? await api.importFromUrl(name.value, openApiUrl.value)
+      ? await api.importFromUrl(name.value, openApiUrl.value, auth.value)
       : await (async () => {
           if (!file.value) throw new Error('Please choose a YAML or JSON file')
-          return api.importFromFile(name.value, file.value)
+          return api.importFromFile(name.value, file.value, auth.value)
         })()
 
     successMessage.value = `${project.toolsCount} MCP tools generated`
@@ -98,6 +100,10 @@ async function submit() {
           @change="onFileChange"
           class="w-full text-sm text-muted file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-surface-alt file:text-ink file:text-sm hover:file:bg-line"
         />
+      </div>
+
+      <div class="mb-8">
+        <AuthConfigFields v-model="auth" />
       </div>
 
       <button

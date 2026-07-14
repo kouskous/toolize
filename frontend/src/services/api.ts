@@ -1,3 +1,20 @@
+export type AuthType = 'NONE' | 'API_KEY' | 'BEARER_TOKEN' | 'BASIC_AUTH'
+export type ApiKeyLocation = 'HEADER' | 'QUERY'
+
+export interface ApiAuthConfig {
+  type: AuthType
+  apiKeyName?: string
+  apiKeyLocation?: ApiKeyLocation
+  apiKeyValue?: string
+  bearerToken?: string
+  basicUsername?: string
+  basicPassword?: string
+}
+
+export function defaultAuthConfig(): ApiAuthConfig {
+  return { type: 'NONE', apiKeyLocation: 'HEADER' }
+}
+
 export interface ApiProject {
   id: string
   name: string
@@ -7,6 +24,7 @@ export interface ApiProject {
   status: 'ACTIVE' | 'ERROR'
   errorMessage?: string
   importedAt?: string
+  auth: ApiAuthConfig
 }
 
 export interface ToolSummary {
@@ -49,21 +67,38 @@ export const api = {
     return fetch(`/api/projects/${id}`).then(res => handle<ApiProject>(res))
   },
 
-  importFromUrl(name: string, openApiUrl: string): Promise<ApiProject> {
+  importFromUrl(name: string, openApiUrl: string, auth?: ApiAuthConfig): Promise<ApiProject> {
     return fetch('/api/projects/import', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, openApiUrl })
+      body: JSON.stringify({ name, openApiUrl, auth })
     }).then(res => handle<ApiProject>(res))
   },
 
-  importFromFile(name: string, file: File): Promise<ApiProject> {
+  importFromFile(name: string, file: File, auth?: ApiAuthConfig): Promise<ApiProject> {
     const formData = new FormData()
     formData.append('name', name)
     formData.append('file', file)
+    if (auth) {
+      formData.append('authType', auth.type)
+      if (auth.apiKeyName) formData.append('apiKeyName', auth.apiKeyName)
+      if (auth.apiKeyLocation) formData.append('apiKeyLocation', auth.apiKeyLocation)
+      if (auth.apiKeyValue) formData.append('apiKeyValue', auth.apiKeyValue)
+      if (auth.bearerToken) formData.append('bearerToken', auth.bearerToken)
+      if (auth.basicUsername) formData.append('basicUsername', auth.basicUsername)
+      if (auth.basicPassword) formData.append('basicPassword', auth.basicPassword)
+    }
     return fetch('/api/projects/import-file', {
       method: 'POST',
       body: formData
+    }).then(res => handle<ApiProject>(res))
+  },
+
+  updateAuth(id: string, auth: ApiAuthConfig): Promise<ApiProject> {
+    return fetch(`/api/projects/${id}/auth`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(auth)
     }).then(res => handle<ApiProject>(res))
   },
 

@@ -24,6 +24,7 @@ public class ApiProject {
     private Status status = Status.ACTIVE;
     private String errorMessage;
     private Instant importedAt = Instant.now();
+    private ApiAuthConfig auth = new ApiAuthConfig();
 
     public ApiProject() {
     }
@@ -98,5 +99,13 @@ public class ApiProject {
 
     public void setImportedAt(Instant importedAt) {
         this.importedAt = importedAt;
+    }
+
+    public ApiAuthConfig getAuth() {
+        return auth;
+    }
+
+    public void setAuth(ApiAuthConfig auth) {
+        this.auth = auth != null ? auth : new ApiAuthConfig();
     }
 }

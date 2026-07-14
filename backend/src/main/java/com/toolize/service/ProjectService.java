@@ -1,5 +1,6 @@
 package com.toolize.service;
 
+import com.toolize.domain.ApiAuthConfig;
 import com.toolize.domain.ApiProject;
 import com.toolize.domain.McpTool;
 import org.slf4j.Logger;
@@ -7,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -35,17 +37,28 @@ public class ProjectService {
         this.persistenceService = persistenceService;
     }
 
-    public ApiProject importFromUrl(String name, String openApiUrl) {
+    public ApiProject importFromUrl(String name, String openApiUrl, ApiAuthConfig auth) {
         OpenApiImporterService.ParsedApi parsed = importerService.parseFromUrl(openApiUrl);
-        return finishImport(name, openApiUrl, parsed);
+        return finishImport(name, openApiUrl, parsed, auth);
     }
 
-    public ApiProject importFromContent(String name, String content) {
+    public ApiProject importFromContent(String name, String content, ApiAuthConfig auth) {
         OpenApiImporterService.ParsedApi parsed = importerService.parseFromContent(content);
-        return finishImport(name, null, parsed);
+        return finishImport(name, null, parsed, auth);
     }
 
-    private ApiProject finishImport(String name, String openApiUrl, OpenApiImporterService.ParsedApi parsed) {
+    /**
+     * Updates the authentication config used to call an already-imported API.
+     */
+    public Optional<ApiProject> updateAuth(String id, ApiAuthConfig auth) {
+        return persistenceService.find(id).map(project -> {
+            project.setAuth(auth);
+            persistenceService.save(project);
+            return project;
+        });
+    }
+
+    private ApiProject finishImport(String name, String openApiUrl, OpenApiImporterService.ParsedApi parsed, ApiAuthConfig auth) {
         ApiProject project = new ApiProject();
         project.setId(slugify(name));
         project.setName(name);
@@ -53,6 +66,7 @@ public class ProjectService {
         project.setRawSpec(parsed.rawSpec);
         project.setBaseUrl(parsed.baseUrl);
         project.setStatus(ApiProject.Status.ACTIVE);
+        project.setAuth(auth);
 
         List<McpTool> tools = toolGeneratorService.generateTools(project.getId(), parsed.baseUrl, parsed.operations);
 

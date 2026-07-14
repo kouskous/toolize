@@ -1,5 +1,7 @@
 package com.toolize.service;
 
+import com.toolize.domain.ApiAuthConfig;
+import com.toolize.domain.ApiProject;
 import com.toolize.domain.McpTool;
 import com.toolize.domain.OpenApiOperation;
 import org.springframework.http.HttpMethod;
@@ -28,10 +30,18 @@ public class RestExecutionService {
     }
 
     private final RestClient restClient = RestClient.builder().build();
+    private final ProjectPersistenceService persistenceService;
+
+    public RestExecutionService(ProjectPersistenceService persistenceService) {
+        this.persistenceService = persistenceService;
+    }
 
     public ExecutionResult execute(McpTool tool, Map<String, Object> arguments) {
         OpenApiOperation op = tool.getOperation();
         String path = op.getPath();
+        ApiAuthConfig auth = persistenceService.find(tool.getProjectId())
+                .map(ApiProject::getAuth)
+                .orElseGet(ApiAuthConfig::new);
 
         // Replace path parameters
         if (op.getParameters() != null) {
@@ -52,6 +62,12 @@ public class RestExecutionService {
             }
         }
 
+        if (auth.getType() == ApiAuthConfig.AuthType.API_KEY
+                && auth.getApiKeyLocation() == ApiAuthConfig.ApiKeyLocation.QUERY
+                && auth.getApiKeyName() != null && !auth.getApiKeyName().isBlank()) {
+            uriBuilder.queryParam(auth.getApiKeyName(), auth.getApiKeyValue());
+        }
+
         String uri = uriBuilder.build().toUriString();
         HttpMethod method = HttpMethod.valueOf(op.getMethod().toUpperCase());
 
@@ -66,6 +82,8 @@ public class RestExecutionService {
                 }
             }
         }
+
+        requestSpec = applyAuth(requestSpec, auth);
 
         RestClient.RequestHeadersSpec<?> finalRequest;
         Object body = arguments.get("body");
@@ -84,5 +102,31 @@ public class RestExecutionService {
         } catch (Exception e) {
             return new ExecutionResult(502, "{\"error\":\"" + e.getMessage() + "\"}");
         }
+    }
+
+    private RestClient.RequestBodySpec applyAuth(RestClient.RequestBodySpec requestSpec, ApiAuthConfig auth) {
+        switch (auth.getType()) {
+            case API_KEY -> {
+                if (auth.getApiKeyLocation() == ApiAuthConfig.ApiKeyLocation.HEADER
+                        && auth.getApiKeyName() != null && !auth.getApiKeyName().isBlank()) {
+                    return requestSpec.header(auth.getApiKeyName(), auth.getApiKeyValue());
+                }
+            }
+            case BEARER_TOKEN -> {
+                if (auth.getBearerToken() != null && !auth.getBearerToken().isBlank()) {
+                    return requestSpec.header("Authorization", "Bearer " + auth.getBearerToken());
+                }
+            }
+            case BASIC_AUTH -> {
+                if (auth.getBasicUsername() != null && !auth.getBasicUsername().isBlank()) {
+                    String password = auth.getBasicPassword() != null ? auth.getBasicPassword() : "";
+                    return requestSpec.headers(h -> h.setBasicAuth(auth.getBasicUsername(), password));
+                }
+            }
+            case NONE -> {
+                // no-op
+            }
+        }
+        return requestSpec;
     }
 }
