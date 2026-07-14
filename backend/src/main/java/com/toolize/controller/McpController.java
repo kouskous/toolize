@@ -8,6 +8,7 @@ import tools.jackson.databind.node.ObjectNode;
 import com.toolize.domain.McpTool;
 import com.toolize.service.DynamicToolRegistry;
 import com.toolize.service.RestExecutionService;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,7 +27,15 @@ import java.util.Map;
  *  - initialize
  *  - tools/list
  *  - tools/call
+ *
+ * Hidden from OpenAPI generation: this is a JSON-RPC dispatcher, not a REST
+ * resource, so it has no single static request/response schema. It's also
+ * the reason springdoc used to blow up trying to introspect the Jackson 3
+ * ObjectNode/JsonNode parameter and return types as a POJO (Jackson 2's
+ * introspector, pulled in transitively by swagger-core-jakarta, sees two
+ * ambiguous setAll() overloads on Jackson 3's ObjectNode).
  */
+@Hidden
 @RestController
 @RequestMapping("/mcp")
 public class McpController {

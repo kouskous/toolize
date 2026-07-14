@@ -20,21 +20,13 @@
         <java.version>25</java.version>
         <swagger-parser.version>2.1.22</swagger-parser.version>
         <springdoc-openapi.version>3.0.3</springdoc-openapi.version>
-        <!-- swagger-parser pulls swagger-core 2.2.21 transitively, older than the
-             swagger-core-jakarta 2.2.47 springdoc needs; both define
-             io.swagger.v3.core.util.PrimitiveType, so the mismatched older jar on
-             the classpath causes a NoSuchFieldError at startup. Pin to the version
-             springdoc-openapi 3.0.3 was built against so both stay in sync. -->
+        <!-- Must match the swagger-core-jakarta version springdoc-openapi 3.0.3 was
+             built against (see springdoc-openapi parent pom's swagger-api.version). -->
         <swagger-core.version>2.2.47</swagger-core.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>io.swagger.core.v3</groupId>
-                <artifactId>swagger-core</artifactId>
-                <version>${swagger-core.version}</version>
-            </dependency>
             <dependency>
                 <groupId>io.swagger.core.v3</groupId>
                 <artifactId>swagger-models</artifactId>
@@ -67,11 +59,33 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
-        <!-- OpenAPI / Swagger parsing -->
+        <!-- OpenAPI / Swagger parsing.
+             swagger-parser pulls in the legacy javax-flavored "swagger-core" artifact,
+             which duplicates classes (e.g. io.swagger.v3.core.util.PrimitiveType,
+             io.swagger.v3.oas.models.*) already provided by "swagger-core-jakarta"
+             (pulled in by springdoc below). Having both on the classpath causes a
+             split-package conflict: whichever jar wins the classload race can silently
+             break jakarta-annotation introspection, which is why springdoc failed to
+             pick up any controllers. Exclude the legacy artifact so only the jakarta
+             one (matched to it via swagger-core.version) is ever on the classpath. -->
         <dependency>
             <groupId>io.swagger.parser.v3</groupId>
             <artifactId>swagger-parser</artifactId>
             <version>${swagger-parser.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.swagger.core.v3</groupId>
+                    <artifactId>swagger-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Provides swagger-core-jakarta transitively (via springdoc-openapi-starter-common),
+             which swagger-parser above now relies on in place of the excluded legacy artifact. -->
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-core-jakarta</artifactId>
+            <version>${swagger-core.version}</version>
         </dependency>
 
         <!-- OpenAPI documentation for this backend's own REST API -->
