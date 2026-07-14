@@ -1,9 +1,10 @@
 package com.toolize.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import com.toolize.domain.McpTool;
 import com.toolize.service.DynamicToolRegistry;
 import com.toolize.service.RestExecutionService;
@@ -12,11 +13,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -35,7 +33,7 @@ public class McpController {
 
     private final DynamicToolRegistry registry;
     private final RestExecutionService executionService;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new JsonMapper();
 
     public McpController(DynamicToolRegistry registry, RestExecutionService executionService) {
         this.registry = registry;
@@ -43,18 +41,22 @@ public class McpController {
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<ObjectNode> handle(@RequestBody JsonNode request) {
-        String method = request.path("method").asText("");
+    public ObjectNode handle(@RequestBody JsonNode request) {
+        String method = request.path("method").asString("");
         JsonNode id = request.get("id");
         JsonNode params = request.path("params");
 
         return switch (method) {
-            case "initialize" -> Mono.just(success(id, buildInitializeResult()));
-            case "tools/list" -> Mono.just(success(id, buildToolsListResult()));
-            case "tools/call" -> Mono.fromCallable(() -> success(id, buildToolsCallResult(params)))
-                    .subscribeOn(Schedulers.boundedElastic())
-                    .onErrorResume(ex -> Mono.just(error(id, -32000, ex.getMessage())));
-            default -> Mono.just(error(id, -32601, "Method not found: " + method));
+            case "initialize" -> success(id, buildInitializeResult());
+            case "tools/list" -> success(id, buildToolsListResult());
+            case "tools/call" -> {
+                try {
+                    yield success(id, buildToolsCallResult(params));
+                } catch (Exception ex) {
+                    yield error(id, -32000, ex.getMessage());
+                }
+            }
+            default -> error(id, -32601, "Method not found: " + method);
         };
     }
 
@@ -93,7 +95,7 @@ public class McpController {
     }
 
     private ObjectNode buildToolsCallResult(JsonNode params) {
-        String name = params.path("name").asText(null);
+        String name = params.path("name").asString(null);
         if (name == null) {
             throw new IllegalArgumentException("Missing 'name' in tools/call params");
         }
@@ -104,9 +106,7 @@ public class McpController {
         Map<String, Object> arguments = new HashMap<>();
         JsonNode argsNode = params.path("arguments");
         if (argsNode.isObject()) {
-            Iterator<String> fieldNames = argsNode.fieldNames();
-            while (fieldNames.hasNext()) {
-                String field = fieldNames.next();
+            for (String field : argsNode.propertyNames()) {
                 arguments.put(field, mapper.convertValue(argsNode.get(field), Object.class));
             }
         }

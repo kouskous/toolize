@@ -1,6 +1,6 @@
 package com.toolize.domain;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 /**
  * A dynamically generated MCP tool, backed by a REST operation

@@ -8,8 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -43,32 +41,30 @@ public class ProjectController {
     }
 
     @PostMapping("/import")
-    public Mono<ResponseEntity<?>> importProject(@RequestBody ImportRequest request) {
-        return Mono.fromCallable(() -> {
-                    if (request.openApiUrl() == null || request.openApiUrl().isBlank()) {
-                        throw new IllegalArgumentException("openApiUrl is required");
-                    }
-                    return projectService.importFromUrl(request.name(), request.openApiUrl());
-                })
-                .subscribeOn(Schedulers.boundedElastic())
-                .map(project -> ResponseEntity.ok((Object) project))
-                .onErrorResume(this::toErrorResponse);
+    public ResponseEntity<?> importProject(@RequestBody ImportRequest request) {
+        try {
+            if (request.openApiUrl() == null || request.openApiUrl().isBlank()) {
+                throw new IllegalArgumentException("openApiUrl is required");
+            }
+            ApiProject project = projectService.importFromUrl(request.name(), request.openApiUrl());
+            return ResponseEntity.ok(project);
+        } catch (Exception ex) {
+            return toErrorResponse(ex);
+        }
     }
 
     @PostMapping(value = "/import-file", consumes = "multipart/form-data")
-    public Mono<ResponseEntity<?>> importFromFile(@RequestPart("name") String name,
-                                                   @RequestPart("file") MultipartFile file) {
-        return Mono.fromCallable(() -> {
-                    try {
-                        String content = new String(file.getBytes(), StandardCharsets.UTF_8);
-                        return projectService.importFromContent(name, content);
-                    } catch (IOException e) {
-                        throw new IllegalArgumentException("Could not read uploaded file: " + e.getMessage());
-                    }
-                })
-                .subscribeOn(Schedulers.boundedElastic())
-                .map(project -> ResponseEntity.ok((Object) project))
-                .onErrorResume(this::toErrorResponse);
+    public ResponseEntity<?> importFromFile(@RequestPart("name") String name,
+                                             @RequestPart("file") MultipartFile file) {
+        try {
+            String content = new String(file.getBytes(), StandardCharsets.UTF_8);
+            ApiProject project = projectService.importFromContent(name, content);
+            return ResponseEntity.ok(project);
+        } catch (IOException e) {
+            return toErrorResponse(new IllegalArgumentException("Could not read uploaded file: " + e.getMessage()));
+        } catch (Exception ex) {
+            return toErrorResponse(ex);
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -77,9 +73,9 @@ public class ProjectController {
         return ResponseEntity.noContent().build();
     }
 
-    private Mono<ResponseEntity<?>> toErrorResponse(Throwable ex) {
-        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body((Object) new ErrorBody(ex.getMessage())));
+    private ResponseEntity<?> toErrorResponse(Throwable ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorBody(ex.getMessage()));
     }
 
     public record ErrorBody(String error) {

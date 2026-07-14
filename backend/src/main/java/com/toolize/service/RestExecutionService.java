@@ -5,7 +5,7 @@ import com.toolize.domain.OpenApiOperation;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Map;
@@ -27,7 +27,7 @@ public class RestExecutionService {
         }
     }
 
-    private final WebClient webClient = WebClient.builder().build();
+    private final RestClient restClient = RestClient.builder().build();
 
     public ExecutionResult execute(McpTool tool, Map<String, Object> arguments) {
         OpenApiOperation op = tool.getOperation();
@@ -42,7 +42,7 @@ public class RestExecutionService {
             }
         }
 
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(tool.getBaseUrl() + path);
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(tool.getBaseUrl() + path);
 
         if (op.getParameters() != null) {
             for (OpenApiOperation.OpenApiParameter p : op.getParameters()) {
@@ -55,32 +55,32 @@ public class RestExecutionService {
         String uri = uriBuilder.build().toUriString();
         HttpMethod method = HttpMethod.valueOf(op.getMethod().toUpperCase());
 
-        WebClient.RequestBodySpec requestSpec = webClient.method(method).uri(uri)
+        RestClient.RequestBodySpec requestSpec = restClient.method(method).uri(uri)
                 .accept(MediaType.APPLICATION_JSON);
-
-        WebClient.RequestHeadersSpec<?> finalRequest;
-        Object body = arguments.get("body");
-        if (body != null && (method == HttpMethod.POST || method == HttpMethod.PUT || method == HttpMethod.PATCH)) {
-            finalRequest = requestSpec.contentType(MediaType.APPLICATION_JSON).bodyValue(body);
-        } else {
-            finalRequest = requestSpec;
-        }
 
         // Header parameters
         if (op.getParameters() != null) {
             for (OpenApiOperation.OpenApiParameter p : op.getParameters()) {
                 if ("header".equals(p.getIn()) && arguments.containsKey(p.getName())) {
-                    finalRequest = finalRequest.header(p.getName(), String.valueOf(arguments.get(p.getName())));
+                    requestSpec = requestSpec.header(p.getName(), String.valueOf(arguments.get(p.getName())));
                 }
             }
         }
 
+        RestClient.RequestHeadersSpec<?> finalRequest;
+        Object body = arguments.get("body");
+        if (body != null && (method == HttpMethod.POST || method == HttpMethod.PUT || method == HttpMethod.PATCH)) {
+            finalRequest = requestSpec.contentType(MediaType.APPLICATION_JSON).body(body);
+        } else {
+            finalRequest = requestSpec;
+        }
+
         try {
-            return finalRequest.exchangeToMono(response ->
-                    response.bodyToMono(String.class)
-                            .defaultIfEmpty("")
-                            .map(responseBody -> new ExecutionResult(response.statusCode().value(), responseBody))
-            ).block();
+            return finalRequest.exchange((request, response) -> {
+                String responseBody = response.bodyTo(String.class);
+                return new ExecutionResult(response.getStatusCode().value(),
+                        responseBody != null ? responseBody : "");
+            });
         } catch (Exception e) {
             return new ExecutionResult(502, "{\"error\":\"" + e.getMessage() + "\"}");
         }

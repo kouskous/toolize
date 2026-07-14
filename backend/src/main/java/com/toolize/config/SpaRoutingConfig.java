@@ -5,9 +5,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.server.RouterFunction;
-import org.springframework.web.reactive.function.server.RouterFunctions;
-import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.servlet.function.RouterFunction;
+import org.springframework.web.servlet.function.RouterFunctions;
+import org.springframework.web.servlet.function.ServerResponse;
 
 /**
  * Serves the compiled Vue application from classpath:/static for
@@ -22,7 +22,9 @@ public class SpaRoutingConfig {
         return RouterFunctions.route()
                 .GET("/**", request -> {
                     String path = request.path();
-                    if (path.startsWith("/api") || path.startsWith("/mcp")) {
+                    if (path.startsWith("/api") || path.startsWith("/mcp")
+                            || path.startsWith("/v3/api-docs") || path.startsWith("/swagger-ui")
+                            || path.startsWith("/webjars")) {
                         return ServerResponse.notFound().build();
                     }
                     if (path.contains(".") && !path.endsWith(".html")) {
@@ -30,7 +32,7 @@ public class SpaRoutingConfig {
                         return ServerResponse.notFound().build();
                     }
                     Resource index = new ClassPathResource("static/index.html");
-                    return ServerResponse.ok().contentType(MediaType.TEXT_HTML).bodyValue(index);
+                    return ServerResponse.ok().contentType(MediaType.TEXT_HTML).body(index);
                 })
                 .build();
     }

@@ -6,8 +6,6 @@ import com.toolize.service.RestExecutionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
 import java.util.Map;
@@ -50,22 +48,22 @@ public class ToolController {
     }
 
     @PostMapping("/{toolName}/execute")
-    public Mono<ResponseEntity<?>> executeTool(@PathVariable String projectId,
-                                                @PathVariable String toolName,
-                                                @RequestBody(required = false) ExecuteRequest request) {
-        return Mono.fromCallable(() -> {
-                    McpTool tool = registry.find(toolName)
-                            .filter(t -> t.getProjectId().equals(projectId))
-                            .orElseThrow(() -> new IllegalArgumentException("Tool not found: " + toolName));
+    public ResponseEntity<?> executeTool(@PathVariable String projectId,
+                                          @PathVariable String toolName,
+                                          @RequestBody(required = false) ExecuteRequest request) {
+        try {
+            McpTool tool = registry.find(toolName)
+                    .filter(t -> t.getProjectId().equals(projectId))
+                    .orElseThrow(() -> new IllegalArgumentException("Tool not found: " + toolName));
 
-                    Map<String, Object> args = (request != null && request.arguments() != null)
-                            ? request.arguments() : Map.of();
+            Map<String, Object> args = (request != null && request.arguments() != null)
+                    ? request.arguments() : Map.of();
 
-                    RestExecutionService.ExecutionResult result = executionService.execute(tool, args);
-                    return ResponseEntity.ok((Object) new ExecuteResponse(result.status, result.body));
-                })
-                .subscribeOn(Schedulers.boundedElastic())
-                .onErrorResume(ex -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body((Object) Map.of("error", ex.getMessage()))));
+            RestExecutionService.ExecutionResult result = executionService.execute(tool, args);
+            return ResponseEntity.ok(new ExecuteResponse(result.status, result.body));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", ex.getMessage()));
+        }
     }
 }

@@ -7,7 +7,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # ---------- Stage 2: build the Spring Boot backend ----------
-FROM maven:3.9-eclipse-temurin-21 AS backend-build
+FROM maven:3.9-eclipse-temurin-25 AS backend-build
 WORKDIR /backend
 COPY backend/pom.xml ./
 RUN mvn -B -q dependency:go-offline
@@ -19,7 +19,7 @@ COPY --from=frontend-build /frontend/dist ./src/main/resources/static
 RUN mvn -B -q clean package -DskipTests
 
 # ---------- Stage 3: minimal runtime image ----------
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
 
 RUN mkdir -p /data

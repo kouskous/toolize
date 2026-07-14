@@ -1,6 +1,8 @@
 package com.toolize.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import com.toolize.domain.ApiProject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class ProjectPersistenceService {
 
     private static final Logger log = LoggerFactory.getLogger(ProjectPersistenceService.class);
 
-    private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
+    private final ObjectMapper mapper = JsonMapper.builder().findAndAddModules().build();
     private final ConcurrentHashMap<String, ApiProject> projects = new ConcurrentHashMap<>();
 
     @Value("${toolize.data-dir:/data}")
@@ -47,7 +48,7 @@ public class ProjectPersistenceService {
                 projects.put(p.getId(), p);
             }
             return List.of(loaded);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             log.warn("Could not read {}: {}", file, e.getMessage());
             return new ArrayList<>();
         }
@@ -78,7 +79,7 @@ public class ProjectPersistenceService {
                 dir.mkdirs();
             }
             mapper.writerWithDefaultPrettyPrinter().writeValue(storageFile().toFile(), projects.values());
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             log.error("Failed to persist projects.json: {}", e.getMessage());
         }
     }
