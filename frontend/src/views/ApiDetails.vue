@@ -1,0 +1,63 @@
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { api, type ApiProject, type ToolSummary } from '../services/api'
+import ToolList from '../components/ToolList.vue'
+
+const props = defineProps<{ id: string }>()
+const router = useRouter()
+
+const project = ref<ApiProject | null>(null)
+const tools = ref<ToolSummary[]>([])
+const loading = ref(true)
+const error = ref<string | null>(null)
+const deleting = ref(false)
+
+onMounted(async () => {
+  try {
+    const [p, t] = await Promise.all([api.getProject(props.id), api.listTools(props.id)])
+    project.value = p
+    tools.value = t
+  } catch (e: any) {
+    error.value = e.message
+  } finally {
+    loading.value = false
+  }
+})
+
+async function remove() {
+  if (!confirm('Delete this API and all its generated tools?')) return
+  deleting.value = true
+  try {
+    await api.deleteProject(props.id)
+    router.push('/')
+  } catch (e: any) {
+    error.value = e.message
+    deleting.value = false
+  }
+}
+</script>
+
+<template>
+  <div v-if="loading" class="text-muted text-sm">Loading...</div>
+  <div v-else-if="error" class="text-red-600 text-sm">{{ error }}</div>
+
+  <div v-else-if="project">
+    <div class="flex items-start justify-between mb-2">
+      <h1 class="text-2xl font-semibold text-ink tracking-tight">{{ project.name }}</h1>
+      <button
+        :disabled="deleting"
+        @click="remove"
+        class="text-sm text-red-600 hover:underline disabled:opacity-50"
+      >
+        Delete API
+      </button>
+    </div>
+    <p v-if="project.openApiUrl" class="text-sm text-muted mb-1">Source: {{ project.openApiUrl }}</p>
+    <p class="text-sm text-muted mb-10">{{ project.toolsCount }} generated tools &middot; {{ project.status }}</p>
+
+    <h2 class="text-sm font-semibold text-muted uppercase tracking-wide mb-4">Generated tools</h2>
+    <ToolList :project-id="project.id" :tools="tools" />
+  </div>
+
+</template>

@@ -1,0 +1,17 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: toolize
+  webflux:
+    multipart:
+      max-in-memory-size: 10MB
+
+toolize:
+  data-dir: ${TOOLIZE_DATA_DIR:/data}
+
+logging:
+  level:
+    root: INFO
+    com.toolize: INFO
