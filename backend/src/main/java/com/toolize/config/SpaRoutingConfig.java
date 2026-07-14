@@ -33,7 +33,7 @@ public class SpaRoutingConfig {
             String path = request.path();
             return !path.startsWith("/api") && !path.startsWith("/mcp")
                     && !path.startsWith("/v3/api-docs") && !path.startsWith("/swagger-ui")
-                    && !path.startsWith("/webjars");
+                    && !path.startsWith("/webjars") && !path.startsWith("/assets");
         });
 
         return RouterFunctions.route()
