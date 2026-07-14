@@ -29,5 +29,9 @@ COPY --from=backend-build /backend/target/toolize.jar /app/toolize.jar
 
 EXPOSE 8080
 ENV TOOLIZE_DATA_DIR=/data
+# Default admin credentials for the login page - override in production, e.g.:
+#   docker run -e TOOLIZE_ADMIN_USERNAME=admin -e TOOLIZE_ADMIN_PASSWORD=change-me ...
+ENV TOOLIZE_ADMIN_USERNAME=admin
+ENV TOOLIZE_ADMIN_PASSWORD=admin
 
 ENTRYPOINT ["java", "-jar", "/app/toolize.jar"]

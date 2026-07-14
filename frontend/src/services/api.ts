@@ -21,6 +21,12 @@ export interface ToolDetail extends ToolSummary {
 }
 
 async function handle<T>(res: Response): Promise<T> {
+  if (res.status === 401) {
+    if (!window.location.pathname.startsWith('/login')) {
+      window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`
+    }
+    throw new Error('Session expirée')
+  }
   if (!res.ok) {
     let message = `Request failed (${res.status})`
     try {

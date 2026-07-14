@@ -47,6 +47,12 @@
             <artifactId>spring-boot-starter-webmvc</artifactId>
         </dependency>
 
+        <!-- Authentication for the admin UI and the /mcp endpoint -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
         <!-- RestClient used by RestExecutionService -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
