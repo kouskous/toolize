@@ -5,24 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Toolize — OpenAPI to MCP tools, instantly</title>
 <meta name="description" content="Toolize turns any OpenAPI specification into MCP tools, with no code and no restart." />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230a0e0f%22/><text x=%2250%22 y=%2266%22 font-family=%22monospace%22 font-size=%2244%22 fill=%22%2334d399%22 text-anchor=%22middle%22>&gt;_</text></svg>" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%236D5CFF%22/><text x=%2250%22 y=%2268%22 font-family=%22sans-serif%22 font-size=%2255%22 font-weight=%22700%22 fill=%22white%22 text-anchor=%22middle%22>T</text></svg>" />
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<div class="scanlines" aria-hidden="true"></div>
-
-<header class="topbar">
-  <div class="topbar-inner">
+<header class="nav">
+  <div class="nav-inner">
     <a href="#top" class="brand">
-      <span class="dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></span>
-      <span class="brand-text">toolize@shell</span>
+      <span class="brand-mark">T</span>
+      <span class="brand-name">Toolize</span>
     </a>
-    <nav class="flags">
-      <a href="#what">--concept</a>
-      <a href="#how">--how-it-works</a>
-      <a href="#quickstart">--quick-start</a>
-      <a href="https://github.com/kouskous/toolize" class="flag-primary" target="_blank" rel="noopener">--github</a>
+    <nav class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#screenshots">Screenshots</a>
+      <a href="#quickstart">Quick start</a>
+      <a href="https://github.com/kouskous/toolize" class="nav-cta" target="_blank" rel="noopener">GitHub</a>
     </nav>
   </div>
 </header>
@@ -30,149 +28,164 @@
 <main id="top">
 
   <section class="hero">
-    <div class="window">
-      <div class="window-bar">
-        <span class="dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></span>
-        <span class="window-title">toolize — zsh — 100x30</span>
-      </div>
-      <div class="window-body">
-        <p class="prompt-line">
-          <span class="prompt">visitor@toolize</span><span class="prompt-sep">:~$</span>
-          <span id="typed"></span><span class="cursor"></span>
-        </p>
-        <h1>Turn any API into <span class="accent">MCP</span> tools.<br>Instantly.</h1>
-        <p class="hero-sub">
-          <span class="comment"># Toolize imports an OpenAPI spec and exposes every endpoint</span><br>
-          <span class="comment"># as an MCP tool — no code, no restart.</span>
-        </p>
-        <div class="hero-actions">
-          <a href="#quickstart" class="btn btn-primary">$ docker run &rarr;</a>
-          <a href="https://github.com/kouskous/toolize" class="btn btn-ghost" target="_blank" rel="noopener">view source &rarr;</a>
-        </div>
+    <div class="hero-inner">
+      <h1>Turn any API into <span class="accent">MCP tools</span>, instantly.</h1>
+      <p class="hero-sub">
+        Toolize imports an OpenAPI specification and immediately exposes every
+        endpoint as an MCP tool — no code to write, nothing to restart.
+      </p>
+      <div class="hero-actions">
+        <a href="#quickstart" class="btn btn-primary">Get started with Docker</a>
+        <a href="https://github.com/kouskous/toolize" class="btn btn-ghost" target="_blank" rel="noopener">View on GitHub</a>
       </div>
     </div>
-  </section>
 
-  <section id="what" class="section">
-    <p class="section-tag">$ man toolize</p>
-    <div class="window">
-      <div class="window-bar">
-        <span class="dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></span>
-        <span class="window-title">concept.md</span>
-      </div>
-      <div class="window-body">
-        <p class="prose">
-          AI assistants (Claude, Cursor, and any other MCP-compatible client) speak
-          <strong>MCP</strong> (Model Context Protocol), not OpenAPI. Toolize bridges
-          that gap: import a spec, get ready-to-use MCP tools.
-        </p>
-        <ul class="filelist">
-          <li>
-            <span class="filelist-name">01 &middot; import</span>
-            <span class="filelist-desc">Paste a Swagger/OpenAPI URL or upload a YAML/JSON file in the web UI. Toolize handles the parsing.</span>
-          </li>
-          <li>
-            <span class="filelist-name">02 &middot; generate</span>
-            <span class="filelist-desc">Every API endpoint becomes an MCP tool, with its parameters and authentication.</span>
-          </li>
-          <li>
-            <span class="filelist-name">03 &middot; serve</span>
-            <span class="filelist-desc">Tools are available immediately on <code>/mcp</code>, as soon as the import finishes.</span>
-          </li>
-        </ul>
+    <div class="hero-shot">
+      <div class="browser-frame">
+        <div class="browser-bar">
+          <span class="browser-dots"><span></span><span></span><span></span></span>
+          <span class="browser-url">localhost:8080</span>
+        </div>
+        <img src="assets/dashboard.png" alt="Toolize dashboard showing an imported API and its generated MCP tools" />
       </div>
     </div>
   </section>
 
   <section id="how" class="section">
-    <p class="section-tag">$ curl -X POST localhost:8080/api/projects/import</p>
-    <div class="window">
-      <div class="window-bar">
-        <span class="dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></span>
-        <span class="window-title">session.log</span>
+    <div class="section-inner">
+      <h2>How it works</h2>
+      <p class="section-lead">Four steps between an OpenAPI spec and a tool your AI agent can use.</p>
+
+      <ol class="steps">
+        <li class="step">
+          <span class="step-num">1</span>
+          <h3>Import</h3>
+          <p>Paste an OpenAPI/Swagger URL or upload a YAML/JSON file in the Toolize UI.</p>
+        </li>
+        <li class="step">
+          <span class="step-num">2</span>
+          <h3>Parse</h3>
+          <p>Toolize reads every endpoint, schema, and authentication requirement.</p>
+        </li>
+        <li class="step">
+          <span class="step-num">3</span>
+          <h3>Generate</h3>
+          <p>Each endpoint becomes an MCP tool, served as JSON-RPC 2.0 on <code>/mcp</code>.</p>
+        </li>
+        <li class="step">
+          <span class="step-num">4</span>
+          <h3>Connect</h3>
+          <p>Point Claude Desktop, Cursor, or any MCP client at that URL.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="screenshots" class="section section-alt">
+    <div class="section-inner">
+      <h2>See it in action</h2>
+      <p class="section-lead">A real import, from spec to callable tool.</p>
+
+      <div class="showcase">
+        <div class="showcase-text">
+          <span class="showcase-tag">01 &middot; Import</span>
+          <h3>Bring your own spec</h3>
+          <p>Paste an OpenAPI URL, or upload a YAML/JSON file directly — with optional API key, bearer, or basic auth.</p>
+        </div>
+        <div class="showcase-shot">
+          <div class="browser-frame">
+            <div class="browser-bar">
+              <span class="browser-dots"><span></span><span></span><span></span></span>
+              <span class="browser-url">localhost:8080/import</span>
+            </div>
+            <img src="assets/import.png" alt="Toolize import screen with a Bookstore API OpenAPI file selected" />
+          </div>
+        </div>
       </div>
-      <div class="window-body terminal-session">
-<pre><code><span class="comment"># 1. start</span>
-<span class="line"><span class="prompt-sym">$</span> docker run -p 8080:8080 -v toolize-data:/data toolize</span>
-<span class="ok">✓ toolize listening on http://localhost:8080</span>
 
-<span class="comment"># 2. import</span>
-<span class="line"><span class="prompt-sym">$</span> curl -X POST localhost:8080/api/projects/import \</span>
-<span class="line">    -H "Content-Type: application/json" \</span>
-<span class="line">    -d '{"name":"petstore","openApiUrl":"https://petstore3.swagger.io/api/v3/openapi.json"}'</span>
-<span class="dim">→ the same import works from the web UI at localhost:8080</span>
-<span class="ok">✓ parsed 42 endpoints, 12 schemas, 1 auth scheme</span>
+      <div class="showcase reverse">
+        <div class="showcase-text">
+          <span class="showcase-tag">02 &middot; Generate</span>
+          <h3>Every endpoint, ready to call</h3>
+          <p>Toolize turns each operation into an MCP tool automatically — methods, paths, and parameters included.</p>
+        </div>
+        <div class="showcase-shot">
+          <div class="browser-frame">
+            <div class="browser-bar">
+              <span class="browser-dots"><span></span><span></span><span></span></span>
+              <span class="browser-url">localhost:8080/projects/bookstore-api</span>
+            </div>
+            <img src="assets/api-details.png" alt="Toolize project page listing five generated MCP tools for the Bookstore API" />
+          </div>
+        </div>
+      </div>
 
-<span class="comment"># 3. expose</span>
-<span class="ok">✓ generated 42 MCP tools → served as JSON-RPC 2.0 on /mcp</span>
-
-<span class="comment"># 4. connect</span>
-<span class="line"><span class="prompt-sym">$</span> claude mcp add --transport http toolize http://localhost:8080/mcp</span>
-<span class="ok">✓ toolize connected</span>
-<span class="dim">→ point Claude Desktop, Cursor, or any Streamable HTTP-compatible MCP client at that URL</span></code></pre>
+      <div class="showcase">
+        <div class="showcase-text">
+          <span class="showcase-tag">03 &middot; Call</span>
+          <h3>Try tools straight from the browser</h3>
+          <p>Every tool gets a generated form from its schema, so you can test a call before wiring up an AI client.</p>
+        </div>
+        <div class="showcase-shot">
+          <div class="browser-frame">
+            <div class="browser-bar">
+              <span class="browser-dots"><span></span><span></span><span></span></span>
+              <span class="browser-url">localhost:8080/projects/bookstore-api/tools/listBooks</span>
+            </div>
+            <img src="assets/tool-details.png" alt="Toolize tool detail screen with a genre parameter filled in" />
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
   <section id="quickstart" class="section">
-    <p class="section-tag">$ docker run toolize</p>
-    <div class="window">
-      <div class="window-bar">
-        <span class="dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></span>
-        <span class="window-title">quickstart.md</span>
-      </div>
-      <div class="window-body">
-        <p class="prose"><span class="comment"># One dependency: Docker.</span></p>
+    <div class="section-inner">
+      <h2>Get started in under a minute</h2>
+      <p class="section-lead">Just one dependency: Docker.</p>
 
-        <div class="code-block">
-          <div class="code-block-header">
-            <span>terminal</span>
-            <button class="copy-btn" data-copy-target="cmd-docker">copy</button>
-          </div>
-          <pre id="cmd-docker"><code>docker build -t toolize .
+      <div class="code-block">
+        <div class="code-block-header">
+          <span>terminal</span>
+          <button class="copy-btn" data-copy-target="cmd-docker">Copy</button>
+        </div>
+        <pre id="cmd-docker"><code>docker build -t toolize .
 docker run -p 8080:8080 -v toolize-data:/data toolize</code></pre>
-        </div>
+      </div>
 
-        <p class="prose" style="margin-top: 2rem;"><span class="comment"># Then open your browser at:</span></p>
-        <div class="code-block">
-          <div class="code-block-header">
-            <span>url</span>
-            <button class="copy-btn" data-copy-target="cmd-url">copy</button>
-          </div>
-          <pre id="cmd-url"><code>http://localhost:8080</code></pre>
+      <p class="section-lead" style="margin-top: 2.5rem;">Then open your browser at:</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span>url</span>
+          <button class="copy-btn" data-copy-target="cmd-url">Copy</button>
         </div>
+        <pre id="cmd-url"><code>http://localhost:8080</code></pre>
+      </div>
 
-        <p class="prose" style="margin-top: 2rem;">
-          <span class="comment"># Import an OpenAPI/Swagger spec, and the generated MCP tools</span><br>
-          <span class="comment"># are immediately available at:</span>
-        </p>
-        <div class="code-block">
-          <div class="code-block-header">
-            <span>url</span>
-            <button class="copy-btn" data-copy-target="cmd-mcp">copy</button>
-          </div>
-          <pre id="cmd-mcp"><code>http://localhost:8080/mcp</code></pre>
+      <p class="section-lead" style="margin-top: 2.5rem;">
+        Import an OpenAPI/Swagger spec, and the generated MCP tools are
+        immediately available at:
+      </p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span>url</span>
+          <button class="copy-btn" data-copy-target="cmd-mcp">Copy</button>
         </div>
+        <pre id="cmd-mcp"><code>http://localhost:8080/mcp</code></pre>
       </div>
     </div>
   </section>
 
-  <section class="section">
-    <p class="section-tag">$ cat stack.txt</p>
-    <div class="window">
-      <div class="window-bar">
-        <span class="dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></span>
-        <span class="window-title">stack.txt</span>
-      </div>
-      <div class="window-body">
-        <div class="tags">
-          <span class="tag">[spring-boot / webflux]</span>
-          <span class="tag">[swagger-parser]</span>
-          <span class="tag">[mcp · json-rpc-2.0]</span>
-          <span class="tag">[vue3 + vite + ts]</span>
-          <span class="tag">[tailwind]</span>
-          <span class="tag">[docker]</span>
-        </div>
+  <section class="section section-alt">
+    <div class="section-inner">
+      <h2>Under the hood</h2>
+      <div class="tags">
+        <span class="tag">Spring Boot (WebFlux)</span>
+        <span class="tag">swagger-parser</span>
+        <span class="tag">MCP &middot; JSON-RPC 2.0</span>
+        <span class="tag">Vue 3 + Vite + TypeScript</span>
+        <span class="tag">Tailwind CSS</span>
+        <span class="tag">Docker</span>
       </div>
     </div>
   </section>
@@ -181,10 +194,7 @@ docker run -p 8080:8080 -v toolize-data:/data toolize</code></pre>
 
 <footer class="footer">
   <div class="footer-inner">
-    <p class="prompt-line">
-      <span class="prompt">visitor@toolize</span><span class="prompt-sep">:~$</span>
-      <span class="cursor"></span>
-    </p>
+    <span>Toolize</span>
     <a href="https://github.com/kouskous/toolize" target="_blank" rel="noopener">github.com/kouskous/toolize</a>
   </div>
 </footer>
