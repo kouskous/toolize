@@ -40,9 +40,9 @@ async function onLogout() {
             type="button"
             @click="onLogout"
             class="text-muted hover:text-ink transition-colors"
-            title="Déconnexion"
+            title="Log out"
           >
-            Déconnexion
+            Log out
           </button>
         </nav>
       </div>
