@@ -54,7 +54,7 @@
   <section id="how" class="section">
     <div class="section-inner">
       <h2>How it works</h2>
-      <p class="section-lead">Four steps between an OpenAPI spec and a tool your AI agent can use.</p>
+      <p class="section-lead">Five steps between an OpenAPI spec and a tool your AI agent can use.</p>
 
       <ol class="steps">
         <li class="step">
@@ -69,11 +69,16 @@
         </li>
         <li class="step">
           <span class="step-num">3</span>
-          <h3>Generate</h3>
-          <p>Each endpoint becomes an MCP tool, served as JSON-RPC 2.0 on <code>/mcp</code>.</p>
+          <h3>Select</h3>
+          <p>Pick exactly which endpoints to expose — toggle any of them on or off, any time.</p>
         </li>
         <li class="step">
           <span class="step-num">4</span>
+          <h3>Generate</h3>
+          <p>Each selected endpoint becomes an MCP tool, served as JSON-RPC 2.0 on <code>/mcp</code>.</p>
+        </li>
+        <li class="step">
+          <span class="step-num">5</span>
           <h3>Connect</h3>
           <p>Point Claude Desktop, Cursor, or any MCP client at that URL.</p>
         </li>
@@ -105,9 +110,29 @@
 
       <div class="showcase reverse">
         <div class="showcase-text">
-          <span class="showcase-tag">02 &middot; Generate</span>
-          <h3>Every endpoint, ready to call</h3>
-          <p>Toolize turns each operation into an MCP tool automatically — methods, paths, and parameters included.</p>
+          <span class="showcase-tag">02 &middot; Select</span>
+          <h3>Choose exactly what gets exposed</h3>
+          <p>
+            Not every endpoint should become a tool. Pick which ones to expose right after import — and
+            toggle any of them on or off later from the API page, without re-importing anything.
+          </p>
+        </div>
+        <div class="showcase-shot">
+          <div class="browser-frame">
+            <div class="browser-bar">
+              <span class="browser-dots"><span></span><span></span><span></span></span>
+              <span class="browser-url">localhost:8080/import</span>
+            </div>
+            <img src="assets/endpoint-selection.png" alt="Toolize endpoint selection screen with one endpoint unchecked out of five" />
+          </div>
+        </div>
+      </div>
+
+      <div class="showcase">
+        <div class="showcase-text">
+          <span class="showcase-tag">03 &middot; Generate</span>
+          <h3>Every selected endpoint, ready to call</h3>
+          <p>Toolize turns each selected operation into an MCP tool automatically — methods, paths, and parameters included.</p>
         </div>
         <div class="showcase-shot">
           <div class="browser-frame">
@@ -120,9 +145,9 @@
         </div>
       </div>
 
-      <div class="showcase">
+      <div class="showcase reverse">
         <div class="showcase-text">
-          <span class="showcase-tag">03 &middot; Call</span>
+          <span class="showcase-tag">04 &middot; Call</span>
           <h3>Try tools straight from the browser</h3>
           <p>Every tool gets a generated form from its schema, so you can test a call before wiring up an AI client.</p>
         </div>

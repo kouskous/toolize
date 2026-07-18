@@ -38,6 +38,17 @@ export interface ToolDetail extends ToolSummary {
   inputSchema: any
 }
 
+export interface EndpointSummary {
+  operationId: string
+  method: string
+  path: string
+  summary: string
+}
+
+export interface EndpointInfo extends EndpointSummary {
+  enabled: boolean
+}
+
 async function handle<T>(res: Response): Promise<T> {
   if (res.status === 401) {
     if (!window.location.pathname.startsWith('/login')) {
@@ -67,18 +78,38 @@ export const api = {
     return fetch(`/api/projects/${id}`).then(res => handle<ApiProject>(res))
   },
 
-  importFromUrl(name: string, openApiUrl: string, auth?: ApiAuthConfig): Promise<ApiProject> {
+  previewFromUrl(openApiUrl: string): Promise<EndpointSummary[]> {
+    return fetch('/api/projects/preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ openApiUrl })
+    }).then(res => handle<EndpointSummary[]>(res))
+  },
+
+  previewFromFile(file: File): Promise<EndpointSummary[]> {
+    const formData = new FormData()
+    formData.append('file', file)
+    return fetch('/api/projects/preview-file', {
+      method: 'POST',
+      body: formData
+    }).then(res => handle<EndpointSummary[]>(res))
+  },
+
+  importFromUrl(name: string, openApiUrl: string, auth?: ApiAuthConfig, enabledOperationIds?: string[]): Promise<ApiProject> {
     return fetch('/api/projects/import', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, openApiUrl, auth })
+      body: JSON.stringify({ name, openApiUrl, auth, enabledOperationIds })
     }).then(res => handle<ApiProject>(res))
   },
 
-  importFromFile(name: string, file: File, auth?: ApiAuthConfig): Promise<ApiProject> {
+  importFromFile(name: string, file: File, auth?: ApiAuthConfig, enabledOperationIds?: string[]): Promise<ApiProject> {
     const formData = new FormData()
     formData.append('name', name)
     formData.append('file', file)
+    if (enabledOperationIds) {
+      for (const id of enabledOperationIds) formData.append('enabledOperationIds', id)
+    }
     if (auth) {
       formData.append('authType', auth.type)
       if (auth.apiKeyName) formData.append('apiKeyName', auth.apiKeyName)
@@ -110,6 +141,18 @@ export const api = {
 
   listTools(projectId: string): Promise<ToolSummary[]> {
     return fetch(`/api/projects/${projectId}/tools`).then(res => handle<ToolSummary[]>(res))
+  },
+
+  listEndpoints(projectId: string): Promise<EndpointInfo[]> {
+    return fetch(`/api/projects/${projectId}/endpoints`).then(res => handle<EndpointInfo[]>(res))
+  },
+
+  updateEndpoints(projectId: string, enabledOperationIds: string[]): Promise<ApiProject> {
+    return fetch(`/api/projects/${projectId}/endpoints`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabledOperationIds })
+    }).then(res => handle<ApiProject>(res))
   },
 
   getTool(projectId: string, toolName: string): Promise<ToolDetail> {
