@@ -3,6 +3,7 @@ package com.toolize.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.time.Instant;
+import java.util.Set;
 
 /**
  * Represents an imported API (one OpenAPI specification -> a set of MCP tools).
@@ -25,6 +26,10 @@ public class ApiProject {
     private String errorMessage;
     private Instant importedAt = Instant.now();
     private ApiAuthConfig auth = new ApiAuthConfig();
+
+    // operationIds of the endpoints exposed as MCP tools; null means "all endpoints
+    // enabled" (legacy projects imported before endpoint selection existed)
+    private Set<String> enabledOperationIds;
 
     public ApiProject() {
     }
@@ -107,5 +112,17 @@ public class ApiProject {
 
     public void setAuth(ApiAuthConfig auth) {
         this.auth = auth != null ? auth : new ApiAuthConfig();
+    }
+
+    /**
+     * Null means every endpoint discovered in the spec is enabled (either the
+     * project predates endpoint selection, or nothing has been disabled yet).
+     */
+    public Set<String> getEnabledOperationIds() {
+        return enabledOperationIds;
+    }
+
+    public void setEnabledOperationIds(Set<String> enabledOperationIds) {
+        this.enabledOperationIds = enabledOperationIds;
     }
 }
