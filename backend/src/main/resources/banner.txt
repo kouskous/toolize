@@ -1,0 +1,6 @@
+${AnsiColor.BRIGHT_CYAN}  __________  ____  __    _________   ______
+ /_  __/ __ \/ __ \/ /   /  _/__  /  / ____/
+  / / / / / / / / / /    / /   / /  / __/
+ / / / /_/ / /_/ / /____/ /   / /__/ /___
+/_/  \____/\____/_____/___/  /____/_____/${AnsiColor.DEFAULT}
+${AnsiColor.BRIGHT_BLACK}:: Toolize :: ${AnsiColor.DEFAULT}${AnsiColor.BRIGHT_BLACK}(v${application.version:1.0.0})${AnsiColor.DEFAULT} :: ${AnsiColor.BRIGHT_BLACK}Spring Boot (v${spring-boot.version})${AnsiColor.DEFAULT}
