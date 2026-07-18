@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Toolize — OpenAPI to MCP tools, instantly</title>
+<meta name="description" content="Toolize transforme n'importe quelle spécification OpenAPI en outils MCP, sans code et sans redémarrage." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧰</text></svg>" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="#top" class="brand">
+      <span class="brand-mark">Tz</span>
+      <span class="brand-name">Toolize</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#what">Concept</a>
+      <a href="#how">Fonctionnement</a>
+      <a href="#quickstart">Démarrage</a>
+      <a href="https://github.com/kouskous/toolize" class="nav-cta" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="hero-inner">
+      <p class="eyebrow">OpenAPI &rarr; MCP</p>
+      <h1>Transformez n'importe quelle API<br>en outils <span class="gradient-text">MCP</span>, instantanément.</h1>
+      <p class="hero-sub">
+        Toolize importe une spécification OpenAPI et expose immédiatement chaque
+        endpoint comme un outil MCP — sans écrire une ligne de code, sans redémarrer
+        quoi que ce soit.
+      </p>
+      <div class="hero-actions">
+        <a href="#quickstart" class="btn btn-primary">Démarrer avec Docker</a>
+        <a href="https://github.com/kouskous/toolize" class="btn btn-ghost" target="_blank" rel="noopener">Voir le code source</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="what" class="section">
+    <div class="section-inner">
+      <h2>C'est quoi, Toolize&nbsp;?</h2>
+      <p class="section-lead">
+        Les assistants IA (Claude, Cursor, et tout autre client compatible MCP) parlent
+        <strong>MCP</strong> (Model Context Protocol), pas OpenAPI. Toolize comble ce fossé&nbsp;:
+        importez une spec, obtenez des outils MCP prêts à l'emploi.
+      </p>
+
+      <div class="cards">
+        <div class="card">
+          <div class="card-icon">📥</div>
+          <h3>Import en un clic</h3>
+          <p>Collez une URL Swagger/OpenAPI ou uploadez un fichier YAML/JSON. Toolize s'occupe du parsing.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">⚙️</div>
+          <h3>Génération automatique</h3>
+          <p>Chaque endpoint de l'API devient un outil MCP, avec ses paramètres et son authentification.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">⚡</div>
+          <h3>Zéro code, zéro redémarrage</h3>
+          <p>Les outils sont disponibles immédiatement sur <code>/mcp</code>, dès la fin de l'import.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" class="section section-alt">
+    <div class="section-inner">
+      <h2>Comment ça marche</h2>
+      <p class="section-lead">Quatre étapes entre une spec OpenAPI et un outil utilisable par votre agent IA.</p>
+
+      <ol class="steps">
+        <li class="step">
+          <span class="step-num">1</span>
+          <div>
+            <h3>Importer</h3>
+            <p>Renseignez l'URL d'une spec OpenAPI/Swagger ou déposez un fichier YAML/JSON dans l'interface Toolize.</p>
+          </div>
+        </li>
+        <li class="step">
+          <span class="step-num">2</span>
+          <div>
+            <h3>Parser</h3>
+            <p>Toolize analyse les endpoints, schémas et éventuels mécanismes d'authentification de l'API.</p>
+          </div>
+        </li>
+        <li class="step">
+          <span class="step-num">3</span>
+          <div>
+            <h3>Exposer</h3>
+            <p>Chaque endpoint devient un outil MCP, servi en JSON-RPC 2.0 sur <code>/mcp</code>.</p>
+          </div>
+        </li>
+        <li class="step">
+          <span class="step-num">4</span>
+          <div>
+            <h3>Connecter</h3>
+            <p>Pointez Claude Desktop, Cursor, ou tout client MCP compatible Streamable HTTP vers cette URL.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="quickstart" class="section">
+    <div class="section-inner">
+      <h2>Démarrage rapide</h2>
+      <p class="section-lead">Une seule dépendance&nbsp;: Docker.</p>
+
+      <div class="code-block">
+        <div class="code-block-header">
+          <span>terminal</span>
+          <button class="copy-btn" data-copy-target="cmd-docker">Copier</button>
+        </div>
+        <pre id="cmd-docker"><code>docker build -t toolize .
+docker run -p 8080:8080 -v toolize-data:/data toolize</code></pre>
+      </div>
+
+      <p class="section-lead" style="margin-top: 2.5rem;">Puis ouvrez votre navigateur sur&nbsp;:</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span>url</span>
+          <button class="copy-btn" data-copy-target="cmd-url">Copier</button>
+        </div>
+        <pre id="cmd-url"><code>http://localhost:8080</code></pre>
+      </div>
+
+      <p class="section-lead" style="margin-top: 2.5rem;">
+        Importez une spec OpenAPI/Swagger, et les outils MCP générés sont
+        immédiatement disponibles sur&nbsp;:
+      </p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span>url</span>
+          <button class="copy-btn" data-copy-target="cmd-mcp">Copier</button>
+        </div>
+        <pre id="cmd-mcp"><code>http://localhost:8080/mcp</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt">
+    <div class="section-inner">
+      <h2>Sous le capot</h2>
+      <div class="stack-badges">
+        <span class="badge">Spring Boot (WebFlux)</span>
+        <span class="badge">swagger-parser</span>
+        <span class="badge">MCP · JSON-RPC 2.0</span>
+        <span class="badge">Vue 3 + Vite + TypeScript</span>
+        <span class="badge">Tailwind CSS</span>
+        <span class="badge">Docker</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span>Toolize</span>
+    <a href="https://github.com/kouskous/toolize" target="_blank" rel="noopener">github.com/kouskous/toolize</a>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

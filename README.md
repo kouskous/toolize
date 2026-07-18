@@ -3,6 +3,8 @@
 Import an OpenAPI specification and instantly expose the API as MCP tools —
 no code, no restart.
 
+🌐 [Landing page](https://kouskous.github.io/toolize/)
+
 ## Quick start (Docker)
 
 ```bash
