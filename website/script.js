@@ -6,7 +6,7 @@ document.querySelectorAll(".copy-btn").forEach((btn) => {
     try {
       await navigator.clipboard.writeText(target.textContent.trim());
       const original = btn.textContent;
-      btn.textContent = "Copié !";
+      btn.textContent = "Copied!";
       setTimeout(() => {
         btn.textContent = original;
       }, 1500);
