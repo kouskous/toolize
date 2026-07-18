@@ -20,7 +20,7 @@ async function onSubmit() {
     const redirect = (route.query.redirect as string) || '/'
     router.replace(redirect)
   } catch {
-    error.value = 'Identifiants incorrects. Veuillez réessayer.'
+    error.value = 'Incorrect credentials. Please try again.'
   } finally {
     loading.value = false
   }
@@ -38,7 +38,7 @@ async function onSubmit() {
           <span class="text-white text-xl font-semibold">T</span>
         </div>
         <h1 class="text-xl font-semibold tracking-tight text-ink">Toolize</h1>
-        <p class="text-sm text-muted mt-1">Administration du serveur MCP</p>
+        <p class="text-sm text-muted mt-1">MCP server administration</p>
       </div>
 
       <form
@@ -46,7 +46,7 @@ async function onSubmit() {
         class="bg-surface border border-line rounded-2xl shadow-xl shadow-ink/5 p-8 space-y-5"
       >
         <div class="space-y-1.5">
-          <label for="username" class="text-sm font-medium text-ink">Identifiant</label>
+          <label for="username" class="text-sm font-medium text-ink">Username</label>
           <input
             id="username"
             v-model="username"
@@ -59,7 +59,7 @@ async function onSubmit() {
         </div>
 
         <div class="space-y-1.5">
-          <label for="password" class="text-sm font-medium text-ink">Mot de passe</label>
+          <label for="password" class="text-sm font-medium text-ink">Password</label>
           <input
             id="password"
             v-model="password"
@@ -88,12 +88,12 @@ async function onSubmit() {
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
           </svg>
-          <span>{{ loading ? 'Connexion...' : 'Se connecter' }}</span>
+          <span>{{ loading ? 'Signing in...' : 'Sign in' }}</span>
         </button>
       </form>
 
       <p class="text-center text-xs text-muted mt-6">
-        Accès restreint aux administrateurs du serveur MCP.
+        Access restricted to MCP server administrators.
       </p>
     </div>
   </div>

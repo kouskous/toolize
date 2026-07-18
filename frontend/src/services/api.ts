@@ -43,7 +43,7 @@ async function handle<T>(res: Response): Promise<T> {
     if (!window.location.pathname.startsWith('/login')) {
       window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`
     }
-    throw new Error('Session expirée')
+    throw new Error('Session expired')
   }
   if (!res.ok) {
     let message = `Request failed (${res.status})`
