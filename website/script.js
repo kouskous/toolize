@@ -18,7 +18,7 @@ document.querySelectorAll(".copy-btn").forEach((btn) => {
 
 const typedEl = document.getElementById("typed");
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const typedText = "whoami --tool";
+const typedText = "docker run toolize";
 
 if (typedEl) {
   if (prefersReducedMotion) {

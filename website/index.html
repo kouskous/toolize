@@ -46,7 +46,7 @@
           <span class="comment"># as an MCP tool — no code, no restart.</span>
         </p>
         <div class="hero-actions">
-          <a href="#quickstart" class="btn btn-primary">./quick-start.sh</a>
+          <a href="#quickstart" class="btn btn-primary">$ docker run &rarr;</a>
           <a href="https://github.com/kouskous/toolize" class="btn btn-ghost" target="_blank" rel="noopener">view source &rarr;</a>
         </div>
       </div>
@@ -68,15 +68,15 @@
         </p>
         <ul class="filelist">
           <li>
-            <span class="filelist-name">01_import.sh</span>
-            <span class="filelist-desc">Paste a Swagger/OpenAPI URL or upload a YAML/JSON file. Toolize handles the parsing.</span>
+            <span class="filelist-name">01 &middot; import</span>
+            <span class="filelist-desc">Paste a Swagger/OpenAPI URL or upload a YAML/JSON file in the web UI. Toolize handles the parsing.</span>
           </li>
           <li>
-            <span class="filelist-name">02_generate.sh</span>
+            <span class="filelist-name">02 &middot; generate</span>
             <span class="filelist-desc">Every API endpoint becomes an MCP tool, with its parameters and authentication.</span>
           </li>
           <li>
-            <span class="filelist-name">03_serve.sh</span>
+            <span class="filelist-name">03 &middot; serve</span>
             <span class="filelist-desc">Tools are available immediately on <code>/mcp</code>, as soon as the import finishes.</span>
           </li>
         </ul>
@@ -85,20 +85,23 @@
   </section>
 
   <section id="how" class="section">
-    <p class="section-tag">$ toolize import https://api.example.com/openapi.json</p>
+    <p class="section-tag">$ curl -X POST localhost:8080/api/projects/import</p>
     <div class="window">
       <div class="window-bar">
         <span class="dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></span>
         <span class="window-title">session.log</span>
       </div>
       <div class="window-body terminal-session">
-<pre><code><span class="comment"># 1. import</span>
-<span class="line"><span class="prompt-sym">$</span> toolize import https://api.example.com/openapi.json</span>
-<span class="dim">→ enter a spec URL, or drop a YAML/JSON file into the Toolize UI</span>
+<pre><code><span class="comment"># 1. start</span>
+<span class="line"><span class="prompt-sym">$</span> docker run -p 8080:8080 -v toolize-data:/data toolize</span>
+<span class="ok">✓ toolize listening on http://localhost:8080</span>
 
-<span class="comment"># 2. parse</span>
+<span class="comment"># 2. import</span>
+<span class="line"><span class="prompt-sym">$</span> curl -X POST localhost:8080/api/projects/import \</span>
+<span class="line">    -H "Content-Type: application/json" \</span>
+<span class="line">    -d '{"name":"petstore","openApiUrl":"https://petstore3.swagger.io/api/v3/openapi.json"}'</span>
+<span class="dim">→ the same import works from the web UI at localhost:8080</span>
 <span class="ok">✓ parsed 42 endpoints, 12 schemas, 1 auth scheme</span>
-<span class="dim">→ Toolize reads endpoints, schemas, and auth requirements</span>
 
 <span class="comment"># 3. expose</span>
 <span class="ok">✓ generated 42 MCP tools → served as JSON-RPC 2.0 on /mcp</span>
@@ -112,11 +115,11 @@
   </section>
 
   <section id="quickstart" class="section">
-    <p class="section-tag">$ ./quick-start.sh</p>
+    <p class="section-tag">$ docker run toolize</p>
     <div class="window">
       <div class="window-bar">
         <span class="dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></span>
-        <span class="window-title">quickstart.sh</span>
+        <span class="window-title">quickstart.md</span>
       </div>
       <div class="window-body">
         <p class="prose"><span class="comment"># One dependency: Docker.</span></p>
