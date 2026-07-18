@@ -6,7 +6,7 @@ document.querySelectorAll(".copy-btn").forEach((btn) => {
     try {
       await navigator.clipboard.writeText(target.textContent.trim());
       const original = btn.textContent;
-      btn.textContent = "Copied!";
+      btn.textContent = "copied!";
       setTimeout(() => {
         btn.textContent = original;
       }, 1500);
@@ -15,3 +15,23 @@ document.querySelectorAll(".copy-btn").forEach((btn) => {
     }
   });
 });
+
+const typedEl = document.getElementById("typed");
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const typedText = "whoami --tool";
+
+if (typedEl) {
+  if (prefersReducedMotion) {
+    typedEl.textContent = typedText;
+  } else {
+    let i = 0;
+    const type = () => {
+      typedEl.textContent = typedText.slice(0, i);
+      i++;
+      if (i <= typedText.length) {
+        setTimeout(type, 65);
+      }
+    };
+    type();
+  }
+}
