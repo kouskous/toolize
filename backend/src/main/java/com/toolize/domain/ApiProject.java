@@ -3,6 +3,8 @@ package com.toolize.domain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -30,6 +32,10 @@ public class ApiProject {
     // operationIds of the endpoints exposed as MCP tools; null means "all endpoints
     // enabled" (legacy projects imported before endpoint selection existed)
     private Set<String> enabledOperationIds;
+
+    // user-provided description overrides, keyed by operationId, layered on top
+    // of the spec's own summary/description/parameter descriptions
+    private Map<String, ToolCustomization> toolCustomizations = new LinkedHashMap<>();
 
     public ApiProject() {
     }
@@ -124,5 +130,13 @@ public class ApiProject {
 
     public void setEnabledOperationIds(Set<String> enabledOperationIds) {
         this.enabledOperationIds = enabledOperationIds;
+    }
+
+    public Map<String, ToolCustomization> getToolCustomizations() {
+        return toolCustomizations;
+    }
+
+    public void setToolCustomizations(Map<String, ToolCustomization> toolCustomizations) {
+        this.toolCustomizations = toolCustomizations != null ? toolCustomizations : new LinkedHashMap<>();
     }
 }

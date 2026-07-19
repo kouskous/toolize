@@ -225,7 +225,7 @@ public class OpenApiImporterService {
                     type = schema.getType();
                 }
                 parameters.add(new OpenApiOperation.OpenApiParameter(
-                        p.getName(), p.getIn(), Boolean.TRUE.equals(p.getRequired()), type));
+                        p.getName(), p.getIn(), Boolean.TRUE.equals(p.getRequired()), type, normalizeDescription(p.getDescription())));
             }
         }
 
@@ -241,9 +241,22 @@ public class OpenApiImporterService {
             }
         }
 
-        String summary = op.getSummary() != null ? op.getSummary() : (method + " " + path);
+        String normalizedSummary = normalizeDescription(op.getSummary());
+        String summary = (normalizedSummary != null && !normalizedSummary.isBlank()) ? normalizedSummary : (method + " " + path);
 
-        operations.add(new OpenApiOperation(operationId, method, path, summary, parameters, requestBodySchemaJson));
+        operations.add(new OpenApiOperation(operationId, method, path, summary, normalizeDescription(op.getDescription()),
+                parameters, requestBodySchemaJson));
+    }
+
+    /**
+     * swagger-parser mis-reads an *explicit* {@code "description": null} (as opposed to the key
+     * being entirely absent) as the literal string "null" rather than a real null. Toolize's own
+     * rawSpec round-trip (re-serializing then re-parsing a project's stored spec) always emits
+     * explicit nulls for unset fields, which would otherwise leak this parser quirk straight into
+     * generated tool descriptions.
+     */
+    private String normalizeDescription(String value) {
+        return (value == null || value.isBlank() || "null".equals(value)) ? null : value;
     }
 
     private String generateOperationId(String method, String path) {
