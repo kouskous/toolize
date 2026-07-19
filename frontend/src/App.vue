@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { authStore } from './stores/auth'
+import BrandMark from './components/BrandMark.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -23,9 +24,7 @@ async function onLogout() {
     <header class="border-b border-line">
       <div class="max-w-content mx-auto px-8 py-5 flex items-center justify-between">
         <RouterLink to="/" class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-lg bg-accent flex items-center justify-center">
-            <span class="text-white text-sm font-semibold">T</span>
-          </div>
+          <BrandMark :size="28" />
           <span class="text-lg font-semibold tracking-tight text-ink">Toolize</span>
         </RouterLink>
         <nav class="flex items-center gap-6 text-sm text-muted">
