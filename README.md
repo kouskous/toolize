@@ -9,13 +9,8 @@ no code, no restart.
 
 ```bash
 docker build -t toolize .
-docker run -p 8080:8080 -v toolize-data:/data --restart unless-stopped toolize
+docker run -p 8080:8080 -v toolize-data:/data toolize
 ```
-
-`--restart unless-stopped` matters if you later connect a production database from the
-**Database** screen: Toolize validates the connection, saves it, then exits once and
-relies on the container being restarted to pick it up (rather than swapping a live
-database connection out from under itself, mid-request, in the same process).
 
 Then open:
 
@@ -74,7 +69,26 @@ toolize
   HTTP JSON-RPC.
 - **Persistence**: JPA/Hibernate, defaulting to an embedded file-based H2 database
   under `/data` (zero setup - `docker run` just works), with the schema
-  auto-created/updated at startup. From the **Database** screen, an admin can test
-  and switch to a real PostgreSQL, MySQL, or Oracle instance without rebuilding the
-  image; the running tool registry is still an in-memory `ConcurrentHashMap`,
-  rebuilt from the database on every startup.
+  auto-created/updated at startup. The running tool registry is still an in-memory
+  `ConcurrentHashMap`, rebuilt from the database on every startup.
+- **Production database**: set `TOOLIZE_DB_TYPE` to switch off the embedded H2
+  database onto a real PostgreSQL, MySQL, or Oracle instance - no code or image
+  rebuild needed, and no dependency on Spring's own property names:
+
+  ```bash
+  docker run -p 8080:8080 -v toolize-data:/data \
+    -e TOOLIZE_DB_TYPE=POSTGRESQL \
+    -e TOOLIZE_DB_HOST=db.example.com \
+    -e TOOLIZE_DB_PORT=5432 \
+    -e TOOLIZE_DB_NAME=toolize \
+    -e TOOLIZE_DB_USERNAME=toolize \
+    -e TOOLIZE_DB_PASSWORD=change-me \
+    toolize
+  ```
+
+  (`TOOLIZE_DB_TYPE` accepts `POSTGRESQL`, `MYSQL`, or `ORACLE`; `TOOLIZE_DB_PORT`
+  defaults to that database's standard port if omitted.) Because this is plain
+  environment configuration, every replica of a horizontally scaled deployment
+  (e.g. a Kubernetes Deployment with these values sourced from a Secret) connects
+  to the same database identically, regardless of what any one pod's local disk
+  contains.

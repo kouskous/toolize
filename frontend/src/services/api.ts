@@ -104,27 +104,6 @@ export interface ProjectStatsSummary {
   lastCalledAt?: string
 }
 
-export type DatabaseType = 'POSTGRESQL' | 'MYSQL' | 'ORACLE'
-
-export interface DatasourceRequest {
-  type: DatabaseType
-  host: string
-  port: number
-  database: string
-  username: string
-  password: string
-}
-
-export interface DatasourceTestResult {
-  success: boolean
-  message: string
-}
-
-export interface SetupStatus {
-  configured: boolean
-  activeType: 'H2' | DatabaseType | 'UNKNOWN'
-}
-
 async function handle<T>(res: Response): Promise<T> {
   if (res.status === 401) {
     if (!window.location.pathname.startsWith('/login')) {
@@ -270,28 +249,5 @@ export const api = {
 
   getProjectStats(projectId: string): Promise<ProjectStatsSummary> {
     return fetch(`/api/projects/${projectId}/stats`).then(res => handle<ProjectStatsSummary>(res))
-  },
-
-  getSetupStatus(): Promise<SetupStatus> {
-    return fetch('/api/setup/status').then(res => handle<SetupStatus>(res))
-  },
-
-  testDatasource(request: DatasourceRequest): Promise<DatasourceTestResult> {
-    return fetch('/api/setup/datasource/test', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(request)
-    }).then(res => handle<DatasourceTestResult>(res))
-  },
-
-  saveDatasource(request: DatasourceRequest): Promise<DatasourceTestResult> {
-    // 200 (saved) and 400 (validation failed) both carry a real
-    // { success, message } body worth showing as-is - unlike handle()'s
-    // generic error path, neither should be collapsed into "Request failed".
-    return fetch('/api/setup/datasource', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(request)
-    }).then(res => res.json() as Promise<DatasourceTestResult>)
   }
 }

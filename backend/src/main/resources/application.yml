@@ -11,15 +11,13 @@ spring:
   output:
     ansi:
       enabled: ALWAYS
-  # Lets a user pick a production database (Postgres/MySQL/Oracle) from the
-  # Database setup screen without rebuilding the image: SetupController writes
-  # its choice here, and this file - if present - overrides the H2 default below.
-  config:
-    import: "optional:file:${TOOLIZE_DATA_DIR:/data}/datasource.properties"
   # Zero-config default: an embedded, file-based database so "docker run" works
   # immediately with no external database to stand up. PostgreSQL compatibility
   # mode keeps its SQL dialect close to real Postgres, in case that's where a
-  # user ends up moving their data.
+  # user ends up moving their data. Set TOOLIZE_DB_TYPE (and _HOST/_PORT/_NAME/
+  # _USERNAME/_PASSWORD) to point at a real Postgres/MySQL/Oracle instead - see
+  # DatasourceEnvironmentPostProcessor, which overrides these values from those
+  # plain env vars before the datasource bean is created.
   datasource:
     url: "jdbc:h2:file:${TOOLIZE_DATA_DIR:/data}/toolize;MODE=PostgreSQL;DATABASE_TO_UPPER=FALSE"
     driver-class-name: org.h2.Driver
