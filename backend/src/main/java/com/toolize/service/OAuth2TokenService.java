@@ -30,6 +30,7 @@ public class OAuth2TokenService {
 
     private final RestClient restClient = RestClient.builder().build();
     private final ConcurrentHashMap<String, CachedToken> cache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Object> locks = new ConcurrentHashMap<>();
 
     private record CachedToken(String accessToken, Instant expiresAt) {
         boolean isValid() {
@@ -40,17 +41,28 @@ public class OAuth2TokenService {
     /**
      * Returns a valid access token for the given auth config, fetching (or
      * refreshing) it from the token endpoint if needed.
+     *
+     * Locking is per cache key (token url + client id + scope), not global:
+     * refreshing a token for one API must never block a concurrent call to a
+     * different API using a different OAuth2 provider.
      */
-    public synchronized String getAccessToken(ApiAuthConfig auth) {
+    public String getAccessToken(ApiAuthConfig auth) {
         String key = cacheKey(auth);
         CachedToken cached = cache.get(key);
         if (cached != null && cached.isValid()) {
             return cached.accessToken;
         }
 
-        CachedToken fresh = fetchToken(auth);
-        cache.put(key, fresh);
-        return fresh.accessToken;
+        Object lock = locks.computeIfAbsent(key, k -> new Object());
+        synchronized (lock) {
+            CachedToken recheck = cache.get(key);
+            if (recheck != null && recheck.isValid()) {
+                return recheck.accessToken;
+            }
+            CachedToken fresh = fetchToken(auth);
+            cache.put(key, fresh);
+            return fresh.accessToken;
+        }
     }
 
     @SuppressWarnings("unchecked")

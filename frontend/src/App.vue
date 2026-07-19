@@ -29,6 +29,7 @@ async function onLogout() {
         </RouterLink>
         <nav class="flex items-center gap-6 text-sm text-muted">
           <RouterLink to="/" class="hover:text-ink transition-colors">Dashboard</RouterLink>
+          <RouterLink to="/setup/database" class="hover:text-ink transition-colors">Database</RouterLink>
           <RouterLink
             to="/import"
             class="px-4 py-2 rounded-lg bg-ink text-white text-sm font-medium hover:bg-accent transition-colors"

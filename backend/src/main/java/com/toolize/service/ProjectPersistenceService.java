@@ -1,26 +1,28 @@
 package com.toolize.service;
 
-import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import com.toolize.domain.ApiProject;
+import com.toolize.domain.ApiProjectEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Simple filesystem persistence for imported API projects.
- * No database is used in V1: projects are stored as a single JSON
- * file (data/projects.json) so they survive container restarts.
+ * Persistence for imported API projects, backed by a real database (H2 by
+ * default, or Postgres/MySQL/Oracle - see SetupController) instead of a
+ * single hand-rolled JSON file. Each project is one row: {@link ApiProject}
+ * is serialized to JSON only for the handful of fields that don't need their
+ * own column (auth config, enabled endpoints, tool customizations, the raw
+ * spec), so updating one project is a single-row write rather than a
+ * rewrite of every project in the system.
  */
 @Service
 public class ProjectPersistenceService {
@@ -28,59 +30,73 @@ public class ProjectPersistenceService {
     private static final Logger log = LoggerFactory.getLogger(ProjectPersistenceService.class);
 
     private final ObjectMapper mapper = JsonMapper.builder().findAndAddModules().build();
-    private final ConcurrentHashMap<String, ApiProject> projects = new ConcurrentHashMap<>();
+    private final ApiProjectJpaRepository repository;
 
     @Value("${toolize.data-dir:/data}")
     private String dataDir;
 
-    private Path storageFile() {
-        return Path.of(dataDir, "projects.json");
+    public ProjectPersistenceService(ApiProjectJpaRepository repository) {
+        this.repository = repository;
     }
 
-    public synchronized List<ApiProject> loadAll() {
-        Path file = storageFile();
-        if (!Files.exists(file)) {
-            return new ArrayList<>();
+    /**
+     * Historically loaded the JSON file and warmed an in-memory cache; kept as
+     * a distinct method (rather than folding into {@link #findAll()}) since
+     * that's what {@code StartupInitializer} calls to rebuild the tool
+     * registry, even though every read now goes straight to the database.
+     */
+    public List<ApiProject> loadAll() {
+        return findAll();
+    }
+
+    /**
+     * One-time upgrade path: projects imported before the move to a real
+     * database live in a {@code projects.json} file (one big array,
+     * rewritten in full on every save). If that file is still there and the
+     * database is empty, load it in and rename it so it's never reprocessed -
+     * without this, upgrading an existing installation would silently lose
+     * every previously imported API.
+     */
+    public void migrateLegacyJsonIfPresent() {
+        Path legacyFile = Path.of(dataDir, "projects.json");
+        if (!Files.exists(legacyFile) || !repository.findAll().isEmpty()) {
+            return;
         }
         try {
-            ApiProject[] loaded = mapper.readValue(file.toFile(), ApiProject[].class);
-            for (ApiProject p : loaded) {
-                projects.put(p.getId(), p);
+            ApiProject[] legacyProjects = mapper.readValue(legacyFile.toFile(), ApiProject[].class);
+            for (ApiProject project : legacyProjects) {
+                save(project);
             }
-            return List.of(loaded);
-        } catch (JacksonException e) {
-            log.warn("Could not read {}: {}", file, e.getMessage());
-            return new ArrayList<>();
+            Files.move(legacyFile, Path.of(dataDir, "projects.json.migrated"), StandardCopyOption.REPLACE_EXISTING);
+            log.info("Migrated {} project(s) from legacy projects.json into the database", legacyProjects.length);
+        } catch (Exception e) {
+            log.error("Failed to migrate legacy projects.json: {}", e.getMessage());
         }
     }
 
-    public synchronized void save(ApiProject project) {
-        projects.put(project.getId(), project);
-        persist();
+    public void save(ApiProject project) {
+        repository.save(toEntity(project));
     }
 
-    public synchronized void delete(String id) {
-        projects.remove(id);
-        persist();
+    public void delete(String id) {
+        repository.deleteById(id);
     }
 
     public Optional<ApiProject> find(String id) {
-        return Optional.ofNullable(projects.get(id));
+        return repository.findById(id).map(this::toDomain);
     }
 
     public List<ApiProject> findAll() {
-        return List.copyOf(projects.values());
+        return repository.findAll().stream().map(this::toDomain).toList();
     }
 
-    private void persist() {
-        try {
-            File dir = new File(dataDir);
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-            mapper.writerWithDefaultPrettyPrinter().writeValue(storageFile().toFile(), projects.values());
-        } catch (JacksonException e) {
-            log.error("Failed to persist projects.json: {}", e.getMessage());
-        }
+    private ApiProjectEntity toEntity(ApiProject project) {
+        String json = mapper.writeValueAsString(project);
+        return new ApiProjectEntity(project.getId(), project.getName(), project.getStatus().name(),
+                project.getImportedAt(), json);
+    }
+
+    private ApiProject toDomain(ApiProjectEntity entity) {
+        return mapper.readValue(entity.getDataJson(), ApiProject.class);
     }
 }

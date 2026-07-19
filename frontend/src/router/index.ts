@@ -4,6 +4,7 @@ import ImportApi from '../views/ImportApi.vue'
 import ApiDetails from '../views/ApiDetails.vue'
 import ToolDetails from '../views/ToolDetails.vue'
 import LoginView from '../views/LoginView.vue'
+import SetupView from '../views/SetupView.vue'
 import { authStore } from '../stores/auth'
 
 const router = createRouter({
@@ -13,7 +14,8 @@ const router = createRouter({
     { path: '/', name: 'dashboard', component: Dashboard },
     { path: '/import', name: 'import', component: ImportApi },
     { path: '/projects/:id', name: 'api-details', component: ApiDetails, props: true },
-    { path: '/projects/:id/tools/:toolName', name: 'tool-details', component: ToolDetails, props: true }
+    { path: '/projects/:id/tools/:toolName', name: 'tool-details', component: ToolDetails, props: true },
+    { path: '/setup/database', name: 'setup-database', component: SetupView }
   ]
 })
 
