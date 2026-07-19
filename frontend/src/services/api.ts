@@ -1,4 +1,4 @@
-export type AuthType = 'NONE' | 'API_KEY' | 'BEARER_TOKEN' | 'BASIC_AUTH'
+export type AuthType = 'NONE' | 'API_KEY' | 'BEARER_TOKEN' | 'BASIC_AUTH' | 'OAUTH2_CLIENT_CREDENTIALS'
 export type ApiKeyLocation = 'HEADER' | 'QUERY'
 
 export interface ApiAuthConfig {
@@ -9,10 +9,15 @@ export interface ApiAuthConfig {
   bearerToken?: string
   basicUsername?: string
   basicPassword?: string
+  oauth2TokenUrl?: string
+  oauth2ClientId?: string
+  oauth2ClientSecret?: string
+  oauth2Scope?: string
+  extraHeaders?: Record<string, string>
 }
 
 export function defaultAuthConfig(): ApiAuthConfig {
-  return { type: 'NONE', apiKeyLocation: 'HEADER' }
+  return { type: 'NONE', apiKeyLocation: 'HEADER', extraHeaders: {} }
 }
 
 export interface ApiProject {
@@ -49,6 +54,11 @@ export interface EndpointInfo extends EndpointSummary {
   enabled: boolean
 }
 
+export interface PreviewResponse {
+  endpoints: EndpointSummary[]
+  suggestedAuth: ApiAuthConfig | null
+}
+
 async function handle<T>(res: Response): Promise<T> {
   if (res.status === 401) {
     if (!window.location.pathname.startsWith('/login')) {
@@ -78,21 +88,21 @@ export const api = {
     return fetch(`/api/projects/${id}`).then(res => handle<ApiProject>(res))
   },
 
-  previewFromUrl(openApiUrl: string): Promise<EndpointSummary[]> {
+  previewFromUrl(openApiUrl: string): Promise<PreviewResponse> {
     return fetch('/api/projects/preview', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ openApiUrl })
-    }).then(res => handle<EndpointSummary[]>(res))
+    }).then(res => handle<PreviewResponse>(res))
   },
 
-  previewFromFile(file: File): Promise<EndpointSummary[]> {
+  previewFromFile(file: File): Promise<PreviewResponse> {
     const formData = new FormData()
     formData.append('file', file)
     return fetch('/api/projects/preview-file', {
       method: 'POST',
       body: formData
-    }).then(res => handle<EndpointSummary[]>(res))
+    }).then(res => handle<PreviewResponse>(res))
   },
 
   importFromUrl(name: string, openApiUrl: string, auth?: ApiAuthConfig, enabledOperationIds?: string[]): Promise<ApiProject> {
@@ -118,6 +128,13 @@ export const api = {
       if (auth.bearerToken) formData.append('bearerToken', auth.bearerToken)
       if (auth.basicUsername) formData.append('basicUsername', auth.basicUsername)
       if (auth.basicPassword) formData.append('basicPassword', auth.basicPassword)
+      if (auth.oauth2TokenUrl) formData.append('oauth2TokenUrl', auth.oauth2TokenUrl)
+      if (auth.oauth2ClientId) formData.append('oauth2ClientId', auth.oauth2ClientId)
+      if (auth.oauth2ClientSecret) formData.append('oauth2ClientSecret', auth.oauth2ClientSecret)
+      if (auth.oauth2Scope) formData.append('oauth2Scope', auth.oauth2Scope)
+      if (auth.extraHeaders && Object.keys(auth.extraHeaders).length > 0) {
+        formData.append('extraHeadersJson', JSON.stringify(auth.extraHeaders))
+      }
     }
     return fetch('/api/projects/import-file', {
       method: 'POST',

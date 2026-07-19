@@ -2,6 +2,9 @@ package com.toolize.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
  * Authentication configuration used to call the external API represented
  * by an {@link ApiProject}. Applied to every outgoing request in
@@ -14,7 +17,8 @@ public class ApiAuthConfig {
         NONE,
         API_KEY,
         BEARER_TOKEN,
-        BASIC_AUTH
+        BASIC_AUTH,
+        OAUTH2_CLIENT_CREDENTIALS
     }
 
     public enum ApiKeyLocation {
@@ -29,6 +33,18 @@ public class ApiAuthConfig {
     private String bearerToken;
     private String basicUsername;
     private String basicPassword;
+
+    // OAuth2 "client_credentials" grant: Toolize fetches and caches its own
+    // access token, refreshing it before every call once it expires.
+    private String oauth2TokenUrl;
+    private String oauth2ClientId;
+    private String oauth2ClientSecret;
+    private String oauth2Scope;
+
+    // Extra static headers sent on every request, on top of whichever auth
+    // mechanism above is active (e.g. a tenant id header some APIs require
+    // alongside a bearer token).
+    private Map<String, String> extraHeaders = new LinkedHashMap<>();
 
     public ApiAuthConfig() {
     }
@@ -87,5 +103,45 @@ public class ApiAuthConfig {
 
     public void setBasicPassword(String basicPassword) {
         this.basicPassword = basicPassword;
+    }
+
+    public String getOauth2TokenUrl() {
+        return oauth2TokenUrl;
+    }
+
+    public void setOauth2TokenUrl(String oauth2TokenUrl) {
+        this.oauth2TokenUrl = oauth2TokenUrl;
+    }
+
+    public String getOauth2ClientId() {
+        return oauth2ClientId;
+    }
+
+    public void setOauth2ClientId(String oauth2ClientId) {
+        this.oauth2ClientId = oauth2ClientId;
+    }
+
+    public String getOauth2ClientSecret() {
+        return oauth2ClientSecret;
+    }
+
+    public void setOauth2ClientSecret(String oauth2ClientSecret) {
+        this.oauth2ClientSecret = oauth2ClientSecret;
+    }
+
+    public String getOauth2Scope() {
+        return oauth2Scope;
+    }
+
+    public void setOauth2Scope(String oauth2Scope) {
+        this.oauth2Scope = oauth2Scope;
+    }
+
+    public Map<String, String> getExtraHeaders() {
+        return extraHeaders;
+    }
+
+    public void setExtraHeaders(Map<String, String> extraHeaders) {
+        this.extraHeaders = extraHeaders != null ? extraHeaders : new LinkedHashMap<>();
     }
 }

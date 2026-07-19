@@ -41,15 +41,25 @@ public class ProjectService {
     }
 
     /**
+     * Result of parsing a spec without importing anything: the discovered
+     * endpoints, plus a best-effort authentication suggestion read from the
+     * spec's declared security schemes (null if none could be detected).
+     */
+    public record PreviewResult(List<OpenApiOperation> operations, ApiAuthConfig suggestedAuth) {
+    }
+
+    /**
      * Parses a spec without importing anything, so the caller can present the
      * list of discovered endpoints and let the user pick which ones to expose.
      */
-    public List<OpenApiOperation> previewFromUrl(String openApiUrl) {
-        return importerService.parseFromUrl(openApiUrl).operations;
+    public PreviewResult previewFromUrl(String openApiUrl) {
+        OpenApiImporterService.ParsedApi parsed = importerService.parseFromUrl(openApiUrl);
+        return new PreviewResult(parsed.operations, parsed.suggestedAuth);
     }
 
-    public List<OpenApiOperation> previewFromContent(String content) {
-        return importerService.parseFromContent(content).operations;
+    public PreviewResult previewFromContent(String content) {
+        OpenApiImporterService.ParsedApi parsed = importerService.parseFromContent(content);
+        return new PreviewResult(parsed.operations, parsed.suggestedAuth);
     }
 
     public ApiProject importFromUrl(String name, String openApiUrl, ApiAuthConfig auth, Set<String> enabledOperationIds) {
