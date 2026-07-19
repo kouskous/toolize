@@ -14,6 +14,7 @@ const openApiUrl = ref('')
 const file = ref<File | null>(null)
 const mode = ref<'url' | 'file'>('url')
 const auth = ref(defaultAuthConfig())
+const detectedAuthType = ref<string | null>(null)
 
 const endpoints = ref<EndpointSummary[]>([])
 const selectedOperationIds = ref<string[]>([])
@@ -22,6 +23,14 @@ const loadingEndpoints = ref(false)
 const importing = ref(false)
 const error = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
+
+const AUTH_TYPE_LABELS: Record<string, string> = {
+  NONE: 'no authentication',
+  API_KEY: 'an API key',
+  BEARER_TOKEN: 'a bearer token',
+  BASIC_AUTH: 'basic auth',
+  OAUTH2_CLIENT_CREDENTIALS: 'OAuth2 (client credentials)'
+}
 
 function onFileChange(e: Event) {
   const target = e.target as HTMLInputElement
@@ -38,14 +47,22 @@ async function loadEndpoints() {
 
   loadingEndpoints.value = true
   try {
-    endpoints.value = mode.value === 'url'
+    const preview = mode.value === 'url'
       ? await api.previewFromUrl(openApiUrl.value)
       : await (async () => {
           if (!file.value) throw new Error('Please choose a YAML or JSON file')
           return api.previewFromFile(file.value)
         })()
 
+    endpoints.value = preview.endpoints
     selectedOperationIds.value = endpoints.value.map(e => e.operationId)
+
+    detectedAuthType.value = null
+    if (preview.suggestedAuth && auth.value.type === 'NONE') {
+      auth.value = { ...auth.value, ...preview.suggestedAuth }
+      detectedAuthType.value = preview.suggestedAuth.type
+    }
+
     step.value = 'endpoints'
   } catch (e: any) {
     error.value = e.message
@@ -135,22 +152,26 @@ async function submit() {
         />
       </div>
 
-      <div class="mb-8">
-        <AuthConfigFields v-model="auth" />
-      </div>
-
       <button
         :disabled="loadingEndpoints"
         @click="loadEndpoints"
         class="w-full py-2.5 rounded-lg bg-ink text-white text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50"
       >
-        {{ loadingEndpoints ? 'Reading specification...' : 'Next: choose endpoints' }}
+        {{ loadingEndpoints ? 'Reading specification...' : 'Next: authentication & endpoints' }}
       </button>
 
       <p v-if="error" class="mt-4 text-sm text-red-600">{{ error }}</p>
     </div>
 
     <div v-else class="border border-line rounded-xl p-8">
+      <div class="mb-6">
+        <p v-if="detectedAuthType" class="text-xs text-accent bg-accent/10 rounded-lg px-3 py-2 mb-4">
+          Detected from the spec: this API expects {{ AUTH_TYPE_LABELS[detectedAuthType] ?? detectedAuthType }}.
+          Fill in the values below.
+        </p>
+        <AuthConfigFields v-model="auth" />
+      </div>
+
       <div class="mb-6">
         <h2 class="text-sm font-semibold text-ink mb-1">Choose the endpoints to expose</h2>
         <p class="text-xs text-muted">

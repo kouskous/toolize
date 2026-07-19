@@ -1,5 +1,6 @@
 package com.toolize.service;
 
+import com.toolize.domain.ApiAuthConfig;
 import com.toolize.domain.OpenApiOperation;
 import io.swagger.parser.OpenAPIParser;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -11,6 +12,8 @@ import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
+import io.swagger.v3.oas.models.security.OAuthFlow;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
@@ -31,11 +34,13 @@ public class OpenApiImporterService {
         public final String baseUrl;
         public final List<OpenApiOperation> operations;
         public final String rawSpec;
+        public final ApiAuthConfig suggestedAuth;
 
-        public ParsedApi(String baseUrl, List<OpenApiOperation> operations, String rawSpec) {
+        public ParsedApi(String baseUrl, List<OpenApiOperation> operations, String rawSpec, ApiAuthConfig suggestedAuth) {
             this.baseUrl = baseUrl;
             this.operations = operations;
             this.rawSpec = rawSpec;
+            this.suggestedAuth = suggestedAuth;
         }
     }
 
@@ -71,8 +76,95 @@ public class OpenApiImporterService {
         String baseUrl = resolveBaseUrl(openAPI, fallbackUrl);
         List<OpenApiOperation> operations = extractOperations(openAPI);
         String rawSpec = com.toolize.util.YamlJsonUtil.toJson(openAPI);
+        ApiAuthConfig suggestedAuth = detectAuth(openAPI);
 
-        return new ParsedApi(baseUrl, operations, rawSpec);
+        return new ParsedApi(baseUrl, operations, rawSpec, suggestedAuth);
+    }
+
+    /**
+     * Reads the spec's declared {@code securitySchemes} (and which of them is
+     * actually required, via the global {@code security} requirement) and
+     * translates the first one found into a ready-to-use {@link ApiAuthConfig}
+     * suggestion, so the user doesn't have to guess how the API authenticates.
+     * Returns {@code null} when the spec declares no security scheme at all.
+     */
+    private ApiAuthConfig detectAuth(OpenAPI openAPI) {
+        if (openAPI.getComponents() == null || openAPI.getComponents().getSecuritySchemes() == null) {
+            return null;
+        }
+        Map<String, SecurityScheme> schemes = openAPI.getComponents().getSecuritySchemes();
+        if (schemes.isEmpty()) {
+            return null;
+        }
+
+        // Prefer a scheme actually referenced by the global security requirement
+        // (order in the spec), falling back to the first declared scheme.
+        String preferredName = null;
+        if (openAPI.getSecurity() != null) {
+            for (var requirement : openAPI.getSecurity()) {
+                for (String name : requirement.keySet()) {
+                    if (schemes.containsKey(name)) {
+                        preferredName = name;
+                        break;
+                    }
+                }
+                if (preferredName != null) {
+                    break;
+                }
+            }
+        }
+        SecurityScheme scheme = preferredName != null ? schemes.get(preferredName) : schemes.values().iterator().next();
+
+        return toAuthConfig(scheme);
+    }
+
+    private ApiAuthConfig toAuthConfig(SecurityScheme scheme) {
+        ApiAuthConfig auth = new ApiAuthConfig();
+        if (scheme.getType() == null) {
+            return null;
+        }
+
+        switch (scheme.getType()) {
+            case HTTP -> {
+                String httpScheme = scheme.getScheme() != null ? scheme.getScheme().toLowerCase() : "";
+                if ("bearer".equals(httpScheme)) {
+                    auth.setType(ApiAuthConfig.AuthType.BEARER_TOKEN);
+                } else if ("basic".equals(httpScheme)) {
+                    auth.setType(ApiAuthConfig.AuthType.BASIC_AUTH);
+                } else {
+                    return null;
+                }
+            }
+            case APIKEY -> {
+                auth.setType(ApiAuthConfig.AuthType.API_KEY);
+                auth.setApiKeyName(scheme.getName());
+                auth.setApiKeyLocation(scheme.getIn() != null && "query".equalsIgnoreCase(scheme.getIn().toString())
+                        ? ApiAuthConfig.ApiKeyLocation.QUERY
+                        : ApiAuthConfig.ApiKeyLocation.HEADER);
+            }
+            case OAUTH2 -> {
+                OAuthFlow clientCredentials = scheme.getFlows() != null ? scheme.getFlows().getClientCredentials() : null;
+                if (clientCredentials == null) {
+                    // Authorization-code / implicit flows require a browser redirect,
+                    // which doesn't fit Toolize's server-to-server tool calls.
+                    return null;
+                }
+                auth.setType(ApiAuthConfig.AuthType.OAUTH2_CLIENT_CREDENTIALS);
+                auth.setOauth2TokenUrl(clientCredentials.getTokenUrl());
+                if (clientCredentials.getScopes() != null && !clientCredentials.getScopes().isEmpty()) {
+                    auth.setOauth2Scope(String.join(" ", clientCredentials.getScopes().keySet()));
+                }
+            }
+            case OPENIDCONNECT -> {
+                // No single token endpoint to call without a full OIDC discovery
+                // + auth-code dance; suggest bearer so the user can paste a token.
+                auth.setType(ApiAuthConfig.AuthType.BEARER_TOKEN);
+            }
+            default -> {
+                return null;
+            }
+        }
+        return auth;
     }
 
     private String resolveBaseUrl(OpenAPI openAPI, String fallbackUrl) {

@@ -31,9 +31,11 @@ public class RestExecutionService {
 
     private final RestClient restClient = RestClient.builder().build();
     private final ProjectPersistenceService persistenceService;
+    private final OAuth2TokenService oAuth2TokenService;
 
-    public RestExecutionService(ProjectPersistenceService persistenceService) {
+    public RestExecutionService(ProjectPersistenceService persistenceService, OAuth2TokenService oAuth2TokenService) {
         this.persistenceService = persistenceService;
+        this.oAuth2TokenService = oAuth2TokenService;
     }
 
     public ExecutionResult execute(McpTool tool, Map<String, Object> arguments) {
@@ -84,6 +86,7 @@ public class RestExecutionService {
         }
 
         requestSpec = applyAuth(requestSpec, auth);
+        requestSpec = applyExtraHeaders(requestSpec, auth);
 
         RestClient.RequestHeadersSpec<?> finalRequest;
         Object body = arguments.get("body");
@@ -123,10 +126,28 @@ public class RestExecutionService {
                     return requestSpec.headers(h -> h.setBasicAuth(auth.getBasicUsername(), password));
                 }
             }
+            case OAUTH2_CLIENT_CREDENTIALS -> {
+                String token = oAuth2TokenService.getAccessToken(auth);
+                return requestSpec.header("Authorization", "Bearer " + token);
+            }
             case NONE -> {
                 // no-op
             }
         }
         return requestSpec;
+    }
+
+    private RestClient.RequestBodySpec applyExtraHeaders(RestClient.RequestBodySpec requestSpec, ApiAuthConfig auth) {
+        Map<String, String> extraHeaders = auth.getExtraHeaders();
+        if (extraHeaders == null || extraHeaders.isEmpty()) {
+            return requestSpec;
+        }
+        RestClient.RequestBodySpec result = requestSpec;
+        for (Map.Entry<String, String> header : extraHeaders.entrySet()) {
+            if (header.getKey() != null && !header.getKey().isBlank()) {
+                result = result.header(header.getKey(), header.getValue());
+            }
+        }
+        return result;
     }
 }

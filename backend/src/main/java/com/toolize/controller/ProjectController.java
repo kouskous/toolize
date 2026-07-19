@@ -10,15 +10,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @RestController
 @RequestMapping("/api/projects")
 public class ProjectController {
+
+    private static final JsonMapper JSON = new JsonMapper();
 
     private final ProjectService projectService;
     private final ProjectPersistenceService persistenceService;
@@ -41,6 +46,9 @@ public class ProjectController {
     public record EndpointsRequest(Set<String> enabledOperationIds) {
     }
 
+    public record PreviewResponse(List<EndpointSummary> endpoints, ApiAuthConfig suggestedAuth) {
+    }
+
     @GetMapping
     public List<ApiProject> listProjects() {
         return persistenceService.findAll();
@@ -56,8 +64,8 @@ public class ProjectController {
     @PostMapping("/preview")
     public ResponseEntity<?> previewFromUrl(@RequestBody PreviewRequest request) {
         try {
-            List<OpenApiOperation> operations = projectService.previewFromUrl(request.openApiUrl());
-            return ResponseEntity.ok(toSummaries(operations));
+            ProjectService.PreviewResult result = projectService.previewFromUrl(request.openApiUrl());
+            return ResponseEntity.ok(new PreviewResponse(toSummaries(result.operations()), result.suggestedAuth()));
         } catch (Exception ex) {
             return toErrorResponse(ex);
         }
@@ -67,8 +75,8 @@ public class ProjectController {
     public ResponseEntity<?> previewFromFile(@RequestPart("file") MultipartFile file) {
         try {
             String content = new String(file.getBytes(), StandardCharsets.UTF_8);
-            List<OpenApiOperation> operations = projectService.previewFromContent(content);
-            return ResponseEntity.ok(toSummaries(operations));
+            ProjectService.PreviewResult result = projectService.previewFromContent(content);
+            return ResponseEntity.ok(new PreviewResponse(toSummaries(result.operations()), result.suggestedAuth()));
         } catch (IOException e) {
             return toErrorResponse(new IllegalArgumentException("Could not read uploaded file: " + e.getMessage()));
         } catch (Exception ex) {
@@ -100,7 +108,12 @@ public class ProjectController {
                                              @RequestPart(value = "apiKeyValue", required = false) String apiKeyValue,
                                              @RequestPart(value = "bearerToken", required = false) String bearerToken,
                                              @RequestPart(value = "basicUsername", required = false) String basicUsername,
-                                             @RequestPart(value = "basicPassword", required = false) String basicPassword) {
+                                             @RequestPart(value = "basicPassword", required = false) String basicPassword,
+                                             @RequestPart(value = "oauth2TokenUrl", required = false) String oauth2TokenUrl,
+                                             @RequestPart(value = "oauth2ClientId", required = false) String oauth2ClientId,
+                                             @RequestPart(value = "oauth2ClientSecret", required = false) String oauth2ClientSecret,
+                                             @RequestPart(value = "oauth2Scope", required = false) String oauth2Scope,
+                                             @RequestPart(value = "extraHeadersJson", required = false) String extraHeadersJson) {
         try {
             String content = new String(file.getBytes(), StandardCharsets.UTF_8);
             ApiAuthConfig auth = new ApiAuthConfig();
@@ -115,6 +128,14 @@ public class ProjectController {
             auth.setBearerToken(bearerToken);
             auth.setBasicUsername(basicUsername);
             auth.setBasicPassword(basicPassword);
+            auth.setOauth2TokenUrl(oauth2TokenUrl);
+            auth.setOauth2ClientId(oauth2ClientId);
+            auth.setOauth2ClientSecret(oauth2ClientSecret);
+            auth.setOauth2Scope(oauth2Scope);
+            if (extraHeadersJson != null && !extraHeadersJson.isBlank()) {
+                auth.setExtraHeaders(JSON.readValue(extraHeadersJson, new TypeReference<Map<String, String>>() {
+                }));
+            }
 
             ApiProject project = projectService.importFromContent(name, content, auth, enabledOperationIds);
             return ResponseEntity.ok(project);
