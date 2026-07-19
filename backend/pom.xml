@@ -47,6 +47,33 @@
             <artifactId>spring-boot-starter-webmvc</artifactId>
         </dependency>
 
+        <!-- Persistence: projects/tools are stored via JPA instead of a hand-rolled
+             JSON file, so a single project update no longer rewrites every other
+             project's data. H2 (file-based) is the zero-config default so the app
+             still runs with nothing but "docker run"; Postgres/MySQL/Oracle drivers
+             are bundled so a real database can be plugged in for production without
+             rebuilding the image (see SetupController / datasource.properties). -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc11</artifactId>
+        </dependency>
+
         <!-- Authentication for the admin UI and the /mcp endpoint -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
