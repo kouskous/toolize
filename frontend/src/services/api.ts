@@ -43,6 +43,29 @@ export interface ToolDetail extends ToolSummary {
   inputSchema: any
 }
 
+export interface ToolCustomization {
+  description?: string
+  parameterDescriptions?: Record<string, string>
+}
+
+export interface ParameterDefault {
+  name: string
+  in: string
+  required: boolean
+  type: string
+  defaultDescription?: string
+}
+
+export interface CustomizationView {
+  operationId: string
+  toolName: string
+  defaultDescription?: string
+  parameters: ParameterDefault[]
+  hasBody: boolean
+  bodyDefaultDescription?: string
+  customization: ToolCustomization
+}
+
 export interface EndpointSummary {
   operationId: string
   method: string
@@ -174,6 +197,20 @@ export const api = {
 
   getTool(projectId: string, toolName: string): Promise<ToolDetail> {
     return fetch(`/api/projects/${projectId}/tools/${toolName}`).then(res => handle<ToolDetail>(res))
+  },
+
+  getToolCustomization(projectId: string, toolName: string): Promise<CustomizationView> {
+    return fetch(`/api/projects/${projectId}/tools/${toolName}/customize`).then(res => handle<CustomizationView>(res))
+  },
+
+  updateToolCustomization(projectId: string, toolName: string, customization: ToolCustomization): Promise<void> {
+    return fetch(`/api/projects/${projectId}/tools/${toolName}/customize`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(customization)
+    }).then(res => {
+      if (!res.ok) throw new Error(`Request failed (${res.status})`)
+    })
   },
 
   executeTool(projectId: string, toolName: string, args: Record<string, any>): Promise<{ status: number; body: any }> {

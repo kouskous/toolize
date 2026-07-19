@@ -4,12 +4,15 @@ import com.toolize.domain.ApiAuthConfig;
 import com.toolize.domain.ApiProject;
 import com.toolize.domain.McpTool;
 import com.toolize.domain.OpenApiOperation;
+import com.toolize.domain.ToolCustomization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -107,18 +110,45 @@ public class ProjectService {
      */
     public Optional<ApiProject> updateEnabledEndpoints(String id, Set<String> enabledOperationIds) {
         return persistenceService.find(id).map(project -> {
-            List<OpenApiOperation> operations = importerService.parseFromContent(project.getRawSpec()).operations;
-            List<OpenApiOperation> selected = filterOperations(operations, enabledOperationIds);
-
-            List<McpTool> tools = toolGeneratorService.generateTools(project.getId(), project.getBaseUrl(), selected);
-            toolRegistry.removeAllForProject(project.getId());
-            toolRegistry.registerAll(tools);
-
+            int discovered = importerService.parseFromContent(project.getRawSpec()).operations.size();
             project.setEnabledOperationIds(new LinkedHashSet<>(enabledOperationIds));
-            project.setToolsCount(tools.size());
+            regenerateTools(project);
             persistenceService.save(project);
 
-            log.info("Updated project '{}' to expose {} of {} endpoints", project.getId(), tools.size(), operations.size());
+            log.info("Updated project '{}' to expose {} of {} endpoints", project.getId(), project.getToolsCount(), discovered);
+            return project;
+        });
+    }
+
+    /**
+     * Returns the current LLM-facing description customization for a single
+     * tool (empty if none has been set), keyed by the operation's operationId.
+     */
+    public ToolCustomization getToolCustomization(String projectId, String operationId) {
+        return persistenceService.find(projectId)
+                .map(ApiProject::getToolCustomizations)
+                .map(customizations -> customizations.get(operationId))
+                .orElseGet(ToolCustomization::new);
+    }
+
+    /**
+     * Saves (or clears, if the customization is now empty) the LLM-facing
+     * description override for a single tool, then regenerates that
+     * project's tools so the change is immediately visible on /mcp.
+     */
+    public Optional<ApiProject> updateToolCustomization(String projectId, String operationId, ToolCustomization customization) {
+        return persistenceService.find(projectId).map(project -> {
+            Map<String, ToolCustomization> customizations = new LinkedHashMap<>(project.getToolCustomizations());
+            if (customization == null || customization.isEmpty()) {
+                customizations.remove(operationId);
+            } else {
+                customizations.put(operationId, customization);
+            }
+            project.setToolCustomizations(customizations);
+            regenerateTools(project);
+            persistenceService.save(project);
+
+            log.info("Updated tool customization for '{}' on project '{}'", operationId, project.getId());
             return project;
         });
     }
@@ -139,18 +169,27 @@ public class ProjectService {
                 : allOperationIds(parsed.operations);
         project.setEnabledOperationIds(new LinkedHashSet<>(enabled));
 
-        List<OpenApiOperation> selected = filterOperations(parsed.operations, enabled);
-        List<McpTool> tools = toolGeneratorService.generateTools(project.getId(), parsed.baseUrl, selected);
-
-        // Replace any previously registered tools for this project (re-import case)
-        toolRegistry.removeAllForProject(project.getId());
-        toolRegistry.registerAll(tools);
-
-        project.setToolsCount(tools.size());
+        regenerateTools(project);
         persistenceService.save(project);
 
-        log.info("Imported project '{}' with {} of {} MCP tools enabled", project.getId(), tools.size(), parsed.operations.size());
+        log.info("Imported project '{}' with {} of {} MCP tools enabled", project.getId(), project.getToolsCount(), parsed.operations.size());
         return project;
+    }
+
+    /**
+     * Re-parses a project's stored spec, filters it down to the enabled
+     * endpoints, generates MCP tools (applying any saved customizations),
+     * and replaces whatever that project previously had registered.
+     */
+    private void regenerateTools(ApiProject project) {
+        List<OpenApiOperation> operations = importerService.parseFromContent(project.getRawSpec()).operations;
+        List<OpenApiOperation> selected = filterOperations(operations, project.getEnabledOperationIds());
+        List<McpTool> tools = toolGeneratorService.generateTools(
+                project.getId(), project.getBaseUrl(), selected, project.getToolCustomizations());
+
+        toolRegistry.removeAllForProject(project.getId());
+        toolRegistry.registerAll(tools);
+        project.setToolsCount(tools.size());
     }
 
     private List<OpenApiOperation> filterOperations(List<OpenApiOperation> operations, Set<String> enabledOperationIds) {
@@ -184,11 +223,7 @@ public class ProjectService {
         List<ApiProject> projects = persistenceService.loadAll();
         for (ApiProject project : projects) {
             try {
-                List<OpenApiOperation> operations = importerService.parseFromContent(project.getRawSpec()).operations;
-                List<OpenApiOperation> selected = filterOperations(operations, project.getEnabledOperationIds());
-                List<McpTool> tools = toolGeneratorService.generateTools(project.getId(), project.getBaseUrl(), selected);
-                toolRegistry.registerAll(tools);
-                project.setToolsCount(tools.size());
+                regenerateTools(project);
                 project.setStatus(ApiProject.Status.ACTIVE);
             } catch (Exception e) {
                 log.error("Failed to rebuild tools for project {}: {}", project.getId(), e.getMessage());

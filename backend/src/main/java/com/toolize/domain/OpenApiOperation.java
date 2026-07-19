@@ -12,18 +12,20 @@ public class OpenApiOperation {
     private String method;
     private String path;
     private String summary;
+    private String description; // longer free-text description from the spec, may be null
     private List<OpenApiParameter> parameters;
     private String requestBodySchemaJson; // raw JSON schema for request body, may be null
 
     public OpenApiOperation() {
     }
 
-    public OpenApiOperation(String operationId, String method, String path, String summary,
+    public OpenApiOperation(String operationId, String method, String path, String summary, String description,
                              List<OpenApiParameter> parameters, String requestBodySchemaJson) {
         this.operationId = operationId;
         this.method = method;
         this.path = path;
         this.summary = summary;
+        this.description = description;
         this.parameters = parameters;
         this.requestBodySchemaJson = requestBodySchemaJson;
     }
@@ -60,6 +62,14 @@ public class OpenApiOperation {
         this.summary = summary;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public List<OpenApiParameter> getParameters() {
         return parameters;
     }
@@ -84,15 +94,17 @@ public class OpenApiOperation {
         private String in; // "path", "query", "header"
         private boolean required;
         private String type; // string, integer, boolean, etc.
+        private String description; // from the spec, may be null
 
         public OpenApiParameter() {
         }
 
-        public OpenApiParameter(String name, String in, boolean required, String type) {
+        public OpenApiParameter(String name, String in, boolean required, String type, String description) {
             this.name = name;
             this.in = in;
             this.required = required;
             this.type = type;
+            this.description = description;
         }
 
         public String getName() {
@@ -125,6 +137,14 @@ public class OpenApiOperation {
 
         public void setType(String type) {
             this.type = type;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
         }
     }
 }
