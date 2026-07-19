@@ -5,6 +5,7 @@ import com.toolize.domain.ApiProject;
 import com.toolize.domain.OpenApiOperation;
 import com.toolize.service.ProjectPersistenceService;
 import com.toolize.service.ProjectService;
+import com.toolize.service.ToolUsageService;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,10 +28,13 @@ public class ProjectController {
 
     private final ProjectService projectService;
     private final ProjectPersistenceService persistenceService;
+    private final ToolUsageService toolUsageService;
 
-    public ProjectController(ProjectService projectService, ProjectPersistenceService persistenceService) {
+    public ProjectController(ProjectService projectService, ProjectPersistenceService persistenceService,
+                              ToolUsageService toolUsageService) {
         this.projectService = projectService;
         this.persistenceService = persistenceService;
+        this.toolUsageService = toolUsageService;
     }
 
     public record ImportRequest(@NotBlank String name, String openApiUrl, ApiAuthConfig auth,
@@ -174,6 +178,14 @@ public class ProjectController {
         } catch (Exception ex) {
             return toErrorResponse(ex);
         }
+    }
+
+    @GetMapping("/{id}/stats")
+    public ResponseEntity<ToolUsageService.ProjectStatsSummary> getStats(@PathVariable String id) {
+        if (persistenceService.find(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(toolUsageService.getProjectSummary(id));
     }
 
     @DeleteMapping("/{id}")

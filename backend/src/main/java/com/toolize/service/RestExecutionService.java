@@ -32,10 +32,13 @@ public class RestExecutionService {
     private final RestClient restClient = RestClient.builder().build();
     private final ProjectPersistenceService persistenceService;
     private final OAuth2TokenService oAuth2TokenService;
+    private final ToolUsageService usageService;
 
-    public RestExecutionService(ProjectPersistenceService persistenceService, OAuth2TokenService oAuth2TokenService) {
+    public RestExecutionService(ProjectPersistenceService persistenceService, OAuth2TokenService oAuth2TokenService,
+                                 ToolUsageService usageService) {
         this.persistenceService = persistenceService;
         this.oAuth2TokenService = oAuth2TokenService;
+        this.usageService = usageService;
     }
 
     public ExecutionResult execute(McpTool tool, Map<String, Object> arguments) {
@@ -96,15 +99,21 @@ public class RestExecutionService {
             finalRequest = requestSpec;
         }
 
+        long startedAt = System.nanoTime();
+        ExecutionResult result;
         try {
-            return finalRequest.exchange((request, response) -> {
+            result = finalRequest.exchange((request, response) -> {
                 String responseBody = response.bodyTo(String.class);
                 return new ExecutionResult(response.getStatusCode().value(),
                         responseBody != null ? responseBody : "");
             });
         } catch (Exception e) {
-            return new ExecutionResult(502, "{\"error\":\"" + e.getMessage() + "\"}");
+            result = new ExecutionResult(502, "{\"error\":\"" + e.getMessage() + "\"}");
         }
+
+        long latencyMs = (System.nanoTime() - startedAt) / 1_000_000;
+        usageService.recordCall(tool.getProjectId(), op.getOperationId(), result.status, latencyMs);
+        return result;
     }
 
     private RestClient.RequestBodySpec applyAuth(RestClient.RequestBodySpec requestSpec, ApiAuthConfig auth) {

@@ -32,15 +32,18 @@ public class ProjectService {
     private final ToolGeneratorService toolGeneratorService;
     private final DynamicToolRegistry toolRegistry;
     private final ProjectPersistenceService persistenceService;
+    private final ToolUsageService toolUsageService;
 
     public ProjectService(OpenApiImporterService importerService,
                            ToolGeneratorService toolGeneratorService,
                            DynamicToolRegistry toolRegistry,
-                           ProjectPersistenceService persistenceService) {
+                           ProjectPersistenceService persistenceService,
+                           ToolUsageService toolUsageService) {
         this.importerService = importerService;
         this.toolGeneratorService = toolGeneratorService;
         this.toolRegistry = toolRegistry;
         this.persistenceService = persistenceService;
+        this.toolUsageService = toolUsageService;
     }
 
     /**
@@ -212,6 +215,7 @@ public class ProjectService {
     public void deleteProject(String id) {
         toolRegistry.removeAllForProject(id);
         persistenceService.delete(id);
+        toolUsageService.clearProject(id);
     }
 
     /**
