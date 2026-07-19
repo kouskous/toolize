@@ -4,14 +4,8 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import com.toolize.domain.ApiProject;
 import com.toolize.domain.ApiProjectEntity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,13 +21,8 @@ import java.util.Optional;
 @Service
 public class ProjectPersistenceService {
 
-    private static final Logger log = LoggerFactory.getLogger(ProjectPersistenceService.class);
-
     private final ObjectMapper mapper = JsonMapper.builder().findAndAddModules().build();
     private final ApiProjectJpaRepository repository;
-
-    @Value("${toolize.data-dir:/data}")
-    private String dataDir;
 
     public ProjectPersistenceService(ApiProjectJpaRepository repository) {
         this.repository = repository;
@@ -47,31 +36,6 @@ public class ProjectPersistenceService {
      */
     public List<ApiProject> loadAll() {
         return findAll();
-    }
-
-    /**
-     * One-time upgrade path: projects imported before the move to a real
-     * database live in a {@code projects.json} file (one big array,
-     * rewritten in full on every save). If that file is still there and the
-     * database is empty, load it in and rename it so it's never reprocessed -
-     * without this, upgrading an existing installation would silently lose
-     * every previously imported API.
-     */
-    public void migrateLegacyJsonIfPresent() {
-        Path legacyFile = Path.of(dataDir, "projects.json");
-        if (!Files.exists(legacyFile) || !repository.findAll().isEmpty()) {
-            return;
-        }
-        try {
-            ApiProject[] legacyProjects = mapper.readValue(legacyFile.toFile(), ApiProject[].class);
-            for (ApiProject project : legacyProjects) {
-                save(project);
-            }
-            Files.move(legacyFile, Path.of(dataDir, "projects.json.migrated"), StandardCopyOption.REPLACE_EXISTING);
-            log.info("Migrated {} project(s) from legacy projects.json into the database", legacyProjects.length);
-        } catch (Exception e) {
-            log.error("Failed to migrate legacy projects.json: {}", e.getMessage());
-        }
     }
 
     public void save(ApiProject project) {

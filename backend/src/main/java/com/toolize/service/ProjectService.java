@@ -224,7 +224,6 @@ public class ProjectService {
      * (e.g. docker restart) must restore previously imported APIs.
      */
     public void rebuildRegistryFromDisk() {
-        persistenceService.migrateLegacyJsonIfPresent();
         List<ApiProject> projects = persistenceService.loadAll();
         for (ApiProject project : projects) {
             try {
