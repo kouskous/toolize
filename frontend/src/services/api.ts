@@ -82,6 +82,28 @@ export interface PreviewResponse {
   suggestedAuth: ApiAuthConfig | null
 }
 
+export interface CallRecord {
+  timestamp: string
+  status: number
+  latencyMs: number
+}
+
+export interface ToolStatsView {
+  totalCalls: number
+  errorCalls: number
+  errorRate: number
+  lastCalledAt?: string
+  lastStatus?: number
+  avgLatencyMs?: number
+  recentCalls: CallRecord[]
+}
+
+export interface ProjectStatsSummary {
+  totalCalls: number
+  errorCalls: number
+  lastCalledAt?: string
+}
+
 async function handle<T>(res: Response): Promise<T> {
   if (res.status === 401) {
     if (!window.location.pathname.startsWith('/login')) {
@@ -219,5 +241,13 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ arguments: args })
     }).then(res => handle<{ status: number; body: any }>(res))
+  },
+
+  getToolStats(projectId: string, toolName: string): Promise<ToolStatsView> {
+    return fetch(`/api/projects/${projectId}/tools/${toolName}/stats`).then(res => handle<ToolStatsView>(res))
+  },
+
+  getProjectStats(projectId: string): Promise<ProjectStatsSummary> {
+    return fetch(`/api/projects/${projectId}/stats`).then(res => handle<ProjectStatsSummary>(res))
   }
 }

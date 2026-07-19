@@ -6,6 +6,7 @@ import com.toolize.domain.ToolCustomization;
 import com.toolize.service.DynamicToolRegistry;
 import com.toolize.service.ProjectService;
 import com.toolize.service.RestExecutionService;
+import com.toolize.service.ToolUsageService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,12 +26,14 @@ public class ToolController {
     private final DynamicToolRegistry registry;
     private final RestExecutionService executionService;
     private final ProjectService projectService;
+    private final ToolUsageService toolUsageService;
 
     public ToolController(DynamicToolRegistry registry, RestExecutionService executionService,
-                           ProjectService projectService) {
+                           ProjectService projectService, ToolUsageService toolUsageService) {
         this.registry = registry;
         this.executionService = executionService;
         this.projectService = projectService;
+        this.toolUsageService = toolUsageService;
     }
 
     public record ToolSummary(String name, String description, String method, String path) {
@@ -94,6 +97,15 @@ public class ToolController {
         return projectService.updateToolCustomization(projectId, operationId, customization)
                 .<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{toolName}/stats")
+    public ResponseEntity<ToolUsageService.ToolStatsView> getStats(@PathVariable String projectId, @PathVariable String toolName) {
+        Optional<McpTool> tool = registry.find(toolName).filter(t -> t.getProjectId().equals(projectId));
+        if (tool.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(toolUsageService.getStats(projectId, tool.get().getOperation().getOperationId()));
     }
 
     public record ExecuteRequest(Map<String, Object> arguments) {

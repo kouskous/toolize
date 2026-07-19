@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { api, type CustomizationView, type ToolDetail } from '../services/api'
+import { api, type CustomizationView, type ToolDetail, type ToolStatsView } from '../services/api'
 
 const props = defineProps<{ id: string; toolName: string }>()
 
@@ -20,6 +20,28 @@ const bodyDraft = ref('')
 const savingCustomization = ref(false)
 const customizationSaved = ref(false)
 const customizationError = ref<string | null>(null)
+
+const stats = ref<ToolStatsView | null>(null)
+
+function formatRelativeTime(iso?: string): string {
+  if (!iso) return 'never'
+  const seconds = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
+  if (seconds < 5) return 'just now'
+  if (seconds < 60) return `${seconds}s ago`
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  return `${Math.floor(hours / 24)}d ago`
+}
+
+async function refreshStats() {
+  try {
+    stats.value = await api.getToolStats(props.id, props.toolName)
+  } catch {
+    // usage stats are informational only - a failure here shouldn't break the page
+  }
+}
 
 const properties = computed(() => {
   if (!tool.value?.inputSchema?.properties) return [] as Array<[string, any]>
@@ -43,6 +65,7 @@ onMounted(async () => {
     tool.value = toolData
     customizationView.value = customization
     applyCustomizationDrafts(customization)
+    await refreshStats()
   } catch (e: any) {
     error.value = e.message
   } finally {
@@ -105,6 +128,7 @@ async function run() {
     execError.value = e.message
   } finally {
     executing.value = false
+    refreshStats()
   }
 }
 </script>
@@ -170,6 +194,55 @@ async function run() {
       </button>
       <p v-if="customizationSaved" class="mt-3 text-sm text-green-700">✓ Tool definition updated</p>
       <p v-if="customizationError" class="mt-3 text-sm text-red-600">{{ customizationError }}</p>
+    </div>
+
+    <div v-if="stats" class="border border-line rounded-xl p-8 mb-8">
+      <h2 class="text-sm font-semibold text-ink mb-1">Usage</h2>
+      <p class="text-xs text-muted mb-6">
+        How often this tool has actually been called, by an MCP client or from the form below.
+      </p>
+
+      <div v-if="stats.totalCalls === 0" class="text-sm text-muted">
+        Not called yet.
+      </div>
+
+      <div v-else>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          <div>
+            <p class="text-xs text-muted mb-1">Total calls</p>
+            <p class="text-lg font-semibold text-ink">{{ stats.totalCalls }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-muted mb-1">Error rate</p>
+            <p class="text-lg font-semibold" :class="stats.errorRate > 0 ? 'text-red-600' : 'text-ink'">
+              {{ Math.round(stats.errorRate * 100) }}%
+            </p>
+          </div>
+          <div>
+            <p class="text-xs text-muted mb-1">Avg latency</p>
+            <p class="text-lg font-semibold text-ink">{{ Math.round(stats.avgLatencyMs ?? 0) }} ms</p>
+          </div>
+          <div>
+            <p class="text-xs text-muted mb-1">Last called</p>
+            <p class="text-lg font-semibold text-ink">{{ formatRelativeTime(stats.lastCalledAt) }}</p>
+          </div>
+        </div>
+
+        <p class="text-xs font-medium text-muted uppercase tracking-wide mb-2">Recent calls</p>
+        <div class="space-y-1">
+          <div
+            v-for="(call, idx) in [...stats.recentCalls].reverse()"
+            :key="idx"
+            class="flex items-center justify-between text-xs py-1.5 border-b border-line last:border-0"
+          >
+            <span :class="call.status < 400 ? 'text-green-700' : 'text-red-600'" class="font-mono font-medium">
+              HTTP {{ call.status }}
+            </span>
+            <span class="text-muted">{{ call.latencyMs }} ms</span>
+            <span class="text-muted">{{ formatRelativeTime(call.timestamp) }}</span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="border border-line rounded-xl p-8 mb-8">

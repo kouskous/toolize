@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { api, defaultAuthConfig, type ApiAuthConfig, type ApiProject, type EndpointInfo, type ToolSummary } from '../services/api'
+import { api, defaultAuthConfig, type ApiAuthConfig, type ApiProject, type EndpointInfo, type ProjectStatsSummary, type ToolSummary } from '../services/api'
 import ToolList from '../components/ToolList.vue'
 import AuthConfigFields from '../components/AuthConfigFields.vue'
 import EndpointSelector from '../components/EndpointSelector.vue'
@@ -13,6 +13,7 @@ const project = ref<ApiProject | null>(null)
 const tools = ref<ToolSummary[]>([])
 const endpoints = ref<EndpointInfo[]>([])
 const selectedOperationIds = ref<string[]>([])
+const stats = ref<ProjectStatsSummary | null>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
 const deleting = ref(false)
@@ -34,14 +35,16 @@ const endpointsChanged = computed(() => {
 
 onMounted(async () => {
   try {
-    const [p, t, e] = await Promise.all([
+    const [p, t, e, s] = await Promise.all([
       api.getProject(props.id),
       api.listTools(props.id),
-      api.listEndpoints(props.id)
+      api.listEndpoints(props.id),
+      api.getProjectStats(props.id)
     ])
     project.value = p
     tools.value = t
     endpoints.value = e
+    stats.value = s
     selectedOperationIds.value = e.filter(x => x.enabled).map(x => x.operationId)
     authDraft.value = { ...defaultAuthConfig(), ...p.auth }
   } catch (e: any) {
@@ -115,7 +118,13 @@ async function remove() {
       </button>
     </div>
     <p v-if="project.openApiUrl" class="text-sm text-muted mb-1">Source: {{ project.openApiUrl }}</p>
-    <p class="text-sm text-muted mb-10">{{ project.toolsCount }} generated tools &middot; {{ project.status }}</p>
+    <p class="text-sm text-muted mb-10">
+      {{ project.toolsCount }} generated tools &middot; {{ project.status }}
+      <template v-if="stats && stats.totalCalls > 0">
+        &middot; {{ stats.totalCalls }} call{{ stats.totalCalls === 1 ? '' : 's' }}
+        <span v-if="stats.errorCalls > 0" class="text-red-600">({{ stats.errorCalls }} errors)</span>
+      </template>
+    </p>
 
     <h2 class="text-sm font-semibold text-muted uppercase tracking-wide mb-4">Authentication</h2>
     <div class="border border-line rounded-xl p-8 mb-10">
