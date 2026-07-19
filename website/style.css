@@ -92,7 +92,11 @@ code {
   background: var(--accent);
   color: white;
   font-size: 0.85rem;
-  font-weight: 700;
+}
+
+.brand-mark svg {
+  width: 16px;
+  height: 16px;
 }
 
 .nav-links {

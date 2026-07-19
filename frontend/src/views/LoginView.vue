@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { authStore } from '../stores/auth'
+import BrandMark from '../components/BrandMark.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -34,9 +35,7 @@ async function onSubmit() {
 
     <div class="relative w-full max-w-sm">
       <div class="flex flex-col items-center mb-8">
-        <div class="w-12 h-12 rounded-2xl bg-accent flex items-center justify-center shadow-lg shadow-accent/30 mb-4">
-          <span class="text-white text-xl font-semibold">T</span>
-        </div>
+        <BrandMark :size="48" class="shadow-lg shadow-accent/30 mb-4" />
         <h1 class="text-xl font-semibold tracking-tight text-ink">Toolize</h1>
         <p class="text-sm text-muted mt-1">MCP server administration</p>
       </div>
