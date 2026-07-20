@@ -203,7 +203,27 @@ public class OpenApiImporterService {
             addOperation(operations, path, "PATCH", pathItem.getPatch());
             addOperation(operations, path, "DELETE", pathItem.getDelete());
         }
+        deduplicateOperationIds(operations);
         return operations;
+    }
+
+    /**
+     * operationId is supposed to be unique per the OpenAPI spec, but plenty of
+     * real-world specs don't honor that. Toolize uses operationId as the sole
+     * key for endpoint selection, tool identity, and customizations - two
+     * endpoints sharing one would get silently merged into a single checkbox
+     * and a single generated tool. Renaming every collision after the first
+     * (in encounter order, so re-parsing the same spec always yields the same
+     * result) keeps every endpoint independently selectable and addressable.
+     */
+    private void deduplicateOperationIds(List<OpenApiOperation> operations) {
+        Map<String, Integer> seen = new java.util.HashMap<>();
+        for (OpenApiOperation op : operations) {
+            int count = seen.merge(op.getOperationId(), 1, Integer::sum);
+            if (count > 1) {
+                op.setOperationId(op.getOperationId() + "_" + count);
+            }
+        }
     }
 
     private void addOperation(List<OpenApiOperation> operations, String path, String method, Operation op) {
