@@ -221,8 +221,8 @@
           <span>terminal</span>
           <button class="copy-btn" data-copy-target="cmd-docker">Copy</button>
         </div>
-        <pre id="cmd-docker"><code>docker build -t toolize .
-docker run -p 8080:8080 -v toolize-data:/data toolize</code></pre>
+        <pre id="cmd-docker"><code>docker pull ghcr.io/kouskous/toolize:latest
+docker run -p 8080:8080 -v toolize-data:/data ghcr.io/kouskous/toolize:latest</code></pre>
       </div>
 
       <p class="section-lead" style="margin-top: 2.5rem;">Then open your browser at:</p>
@@ -264,7 +264,7 @@ docker run -p 8080:8080 -v toolize-data:/data toolize</code></pre>
   -e TOOLIZE_DB_NAME=toolize \
   -e TOOLIZE_DB_USERNAME=toolize \
   -e TOOLIZE_DB_PASSWORD=change-me \
-  toolize</code></pre>
+  ghcr.io/kouskous/toolize:latest</code></pre>
       </div>
       <p class="section-lead" style="margin: 1.25rem auto 0;">
         <code>TOOLIZE_DB_TYPE</code> also accepts <code>MYSQL</code> and <code>ORACLE</code> —
