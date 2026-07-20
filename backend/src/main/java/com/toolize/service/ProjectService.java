@@ -7,6 +7,7 @@ import com.toolize.domain.OpenApiOperation;
 import com.toolize.domain.ToolCustomization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashMap;
@@ -224,18 +225,47 @@ public class ProjectService {
      * (e.g. docker restart) must restore previously imported APIs.
      */
     public void rebuildRegistryFromDisk() {
+        int count = refreshRegistry();
+        log.info("Rebuilt {} tools across {} projects from disk", toolRegistry.count(), count);
+    }
+
+    /**
+     * Re-reads every project from the database and regenerates its tools on a
+     * short interval, so a config change applied through one instance becomes
+     * visible on every other instance within that window - without a pub/sub
+     * mechanism. Each instance's tool registry is in-memory only, so with
+     * multiple replicas behind a load balancer, a change made through the
+     * replica that happened to serve that request would otherwise never reach
+     * the others until they next restart.
+     *
+     * Trade-off: every project's spec is re-parsed and its tools regenerated
+     * on every tick, even when nothing changed, on every replica. Fine at the
+     * scale of a handful of imported APIs; if that cost ever matters, the fix
+     * is a per-project "last updated" check rather than a shorter interval.
+     */
+    @Scheduled(fixedRate = 15_000)
+    public void refreshRegistryPeriodically() {
+        refreshRegistry();
+    }
+
+    private int refreshRegistry() {
         List<ApiProject> projects = persistenceService.loadAll();
         for (ApiProject project : projects) {
             try {
                 regenerateTools(project);
-                project.setStatus(ApiProject.Status.ACTIVE);
+                if (project.getStatus() != ApiProject.Status.ACTIVE || project.getErrorMessage() != null) {
+                    project.setStatus(ApiProject.Status.ACTIVE);
+                    project.setErrorMessage(null);
+                    persistenceService.save(project);
+                }
             } catch (Exception e) {
                 log.error("Failed to rebuild tools for project {}: {}", project.getId(), e.getMessage());
                 project.setStatus(ApiProject.Status.ERROR);
                 project.setErrorMessage(e.getMessage());
+                persistenceService.save(project);
             }
         }
-        log.info("Rebuilt {} tools across {} projects from disk", toolRegistry.count(), projects.size());
+        return projects.size();
     }
 
     private String slugify(String name) {
