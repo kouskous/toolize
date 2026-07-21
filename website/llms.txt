@@ -1,0 +1,18 @@
+# Toolize
+
+> Toolize is a self-hosted tool that imports an OpenAPI/Swagger specification and instantly exposes the API as MCP (Model Context Protocol) tools, with no code to write and nothing to restart.
+
+Toolize runs as a single Docker container (Spring Boot backend + Vue frontend). Point it at an OpenAPI spec (URL or uploaded YAML/JSON), choose which endpoints to expose, and every selected endpoint becomes a callable MCP tool at `/mcp` (Streamable HTTP, JSON-RPC 2.0) - compatible with Claude Desktop, Cursor, and any other MCP client. Tool descriptions and parameter hints can be customized so an LLM understands what each tool does and when to use it. It is MIT-licensed and free.
+
+## Docs
+
+- [Documentation overview](https://toolize.app/docs/): index of all docs, plus an FAQ.
+- [Getting started](https://toolize.app/docs/getting-started.html): run Toolize with one Docker command, import a spec, connect an MCP client.
+- [Docker & deployment](https://toolize.app/docs/docker.html): embedded H2 database by default; PostgreSQL, MySQL, or Oracle in production via environment variables; running multiple replicas.
+- [Authentication](https://toolize.app/docs/authentication.html): API key, bearer token, HTTP basic, and OAuth2 client credentials, with automatic detection from the spec's security scheme.
+- [OpenAPI import](https://toolize.app/docs/openapi.html): endpoint selection, operationId collision handling, tool description customization, usage analytics.
+
+## Optional
+
+- [GitHub repository](https://github.com/kouskous/toolize): source code, issue tracker, MIT license.
+- [Docker image](https://github.com/kouskous/toolize/pkgs/container/toolize): published at ghcr.io/kouskous/toolize.
