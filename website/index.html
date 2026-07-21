@@ -226,8 +226,15 @@
           <button class="copy-btn" data-copy-target="cmd-docker">Copy</button>
         </div>
         <pre id="cmd-docker"><code>docker pull ghcr.io/kouskous/toolize:latest
-docker run -p 8080:8080 -v toolize-data:/data ghcr.io/kouskous/toolize:latest</code></pre>
+docker run -p 8080:8080 -v toolize-data:/data \
+  -e TOOLIZE_ADMIN_PASSWORD=change-me \
+  ghcr.io/kouskous/toolize:latest</code></pre>
       </div>
+      <p class="section-lead" style="margin: 1.25rem auto 0;">
+        <code>TOOLIZE_ADMIN_PASSWORD</code> is required — Toolize ships with no default
+        admin password and refuses to start without one, so a public instance is never
+        left with a well-known credential.
+      </p>
 
       <p class="section-lead" style="margin-top: 2.5rem;">Then open your browser at:</p>
       <div class="code-block">
@@ -262,6 +269,7 @@ docker run -p 8080:8080 -v toolize-data:/data ghcr.io/kouskous/toolize:latest</c
           <button class="copy-btn" data-copy-target="cmd-db">Copy</button>
         </div>
         <pre id="cmd-db"><code>docker run -p 8080:8080 -v toolize-data:/data \
+  -e TOOLIZE_ADMIN_PASSWORD=change-me \
   -e TOOLIZE_DB_TYPE=POSTGRESQL \
   -e TOOLIZE_DB_HOST=db.example.com \
   -e TOOLIZE_DB_PORT=5432 \

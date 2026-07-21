@@ -31,7 +31,11 @@ public class SpaRoutingConfig {
     public RouterFunction<ServerResponse> spaFallbackRouter() {
         RequestPredicate spaRoute = RequestPredicates.GET("/**").and(request -> {
             String path = request.path();
-            return !path.startsWith("/api") && !path.startsWith("/mcp")
+            // /error must fall through to Boot's own error controller: this router
+            // otherwise catches Tomcat's error dispatch (e.g. the 401 raised by a
+            // failed Basic Auth attempt) and masks it behind a 200 + index.html,
+            // silently turning every authentication failure into an apparent success.
+            return !path.equals("/error") && !path.startsWith("/api") && !path.startsWith("/mcp")
                     && !path.startsWith("/v3/api-docs") && !path.startsWith("/swagger-ui")
                     && !path.startsWith("/webjars") && !path.startsWith("/assets");
         });

@@ -30,18 +30,32 @@ public class SecurityConfig {
     private String adminUsername;
 
     @Value("${toolize.admin.password}")
-    private String adminPassword;
+    private String configuredPassword;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
+    /**
+     * Refuses to start rather than fall back to any built-in default or
+     * auto-generated password - the operator must set TOOLIZE_ADMIN_PASSWORD
+     * explicitly, which is also what keeps every replica of a scaled
+     * deployment consistent (no database round-trip or generated-secret
+     * bookkeeping needed).
+     */
     @Bean
     public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
+        if (configuredPassword.isBlank()) {
+            throw new IllegalStateException(
+                    "TOOLIZE_ADMIN_PASSWORD is not set. Toolize does not ship a default admin " +
+                            "password - set TOOLIZE_ADMIN_USERNAME and TOOLIZE_ADMIN_PASSWORD, e.g.: " +
+                            "docker run -e TOOLIZE_ADMIN_USERNAME=admin -e TOOLIZE_ADMIN_PASSWORD=change-me ...");
+        }
+
         return new InMemoryUserDetailsManager(
                 User.withUsername(adminUsername)
-                        .password(passwordEncoder.encode(adminPassword))
+                        .password(passwordEncoder.encode(configuredPassword))
                         .roles("ADMIN")
                         .build());
     }
