@@ -20,9 +20,9 @@ jobs:
           java-version: "25"
           cache: maven
 
-      - name: Build backend
+      - name: Build and test backend
         working-directory: backend
-        run: mvn -B -Dmaven.test.skip=true package
+        run: mvn -B package
 
   frontend:
     runs-on: ubuntu-latest

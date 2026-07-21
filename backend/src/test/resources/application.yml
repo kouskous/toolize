@@ -1,0 +1,24 @@
+# Overrides src/main/resources/application.yml for the test classpath:
+# an in-memory H2 database (no Docker/Testcontainers dependency for the
+# test suite) and a fixed admin password, so tests don't depend on env
+# vars or leave files behind under /data.
+spring:
+  datasource:
+    url: "jdbc:h2:mem:toolize-test;MODE=PostgreSQL;DATABASE_TO_UPPER=FALSE;DB_CLOSE_DELAY=-1"
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+
+toolize:
+  admin:
+    username: admin
+    password: test-admin-password
+
+logging:
+  level:
+    root: WARN
+    com.toolize: WARN
