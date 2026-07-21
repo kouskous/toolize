@@ -29,9 +29,10 @@ COPY --from=backend-build /backend/target/toolize.jar /app/toolize.jar
 
 EXPOSE 8080
 ENV TOOLIZE_DATA_DIR=/data
-# Default admin credentials for the login page - override in production, e.g.:
+# No default admin password baked in on purpose: if TOOLIZE_ADMIN_PASSWORD
+# isn't set, Toolize generates one on first boot, persists it in the
+# database, and prints it once to the startup log - see SecurityConfig.
+# Set your own with, e.g.:
 #   docker run -e TOOLIZE_ADMIN_USERNAME=admin -e TOOLIZE_ADMIN_PASSWORD=change-me ...
-ENV TOOLIZE_ADMIN_USERNAME=admin
-ENV TOOLIZE_ADMIN_PASSWORD=admin
 
 ENTRYPOINT ["java", "-jar", "/app/toolize.jar"]

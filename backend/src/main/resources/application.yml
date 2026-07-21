@@ -32,7 +32,10 @@ toolize:
   data-dir: ${TOOLIZE_DATA_DIR:/data}
   admin:
     username: ${TOOLIZE_ADMIN_USERNAME:admin}
-    password: ${TOOLIZE_ADMIN_PASSWORD:admin}
+    # Left blank (not "admin") on purpose - see SecurityConfig, which
+    # generates and persists a random password instead of shipping a
+    # well-known default when this isn't set.
+    password: ${TOOLIZE_ADMIN_PASSWORD:}
 
 logging:
   level:
