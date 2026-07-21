@@ -8,14 +8,23 @@ no code, no restart.
 ## Quick start (Docker)
 
 ```bash
+docker pull ghcr.io/kouskous/toolize:latest
+docker run -p 8080:8080 -v toolize-data:/data \
+  -e TOOLIZE_ADMIN_PASSWORD=change-me \
+  ghcr.io/kouskous/toolize:latest
+```
+
+`TOOLIZE_ADMIN_PASSWORD` is required — Toolize ships with no default admin
+password and refuses to start without one.
+
+Prefer to build from source instead of pulling the published image?
+
+```bash
 docker build -t toolize .
 docker run -p 8080:8080 -v toolize-data:/data \
   -e TOOLIZE_ADMIN_PASSWORD=change-me \
   toolize
 ```
-
-`TOOLIZE_ADMIN_PASSWORD` is required — Toolize ships with no default admin
-password and refuses to start without one.
 
 Then open:
 
@@ -51,7 +60,7 @@ docker run -p 8080:8080 -v toolize-data:/data \
   -e TOOLIZE_DB_NAME=toolize \
   -e TOOLIZE_DB_USERNAME=toolize \
   -e TOOLIZE_DB_PASSWORD=change-me \
-  toolize
+  ghcr.io/kouskous/toolize:latest
 ```
 
 **MySQL**
@@ -65,7 +74,7 @@ docker run -p 8080:8080 -v toolize-data:/data \
   -e TOOLIZE_DB_NAME=toolize \
   -e TOOLIZE_DB_USERNAME=toolize \
   -e TOOLIZE_DB_PASSWORD=change-me \
-  toolize
+  ghcr.io/kouskous/toolize:latest
 ```
 
 **Oracle**
@@ -79,7 +88,7 @@ docker run -p 8080:8080 -v toolize-data:/data \
   -e TOOLIZE_DB_NAME=orclpdb1 \
   -e TOOLIZE_DB_USERNAME=toolize \
   -e TOOLIZE_DB_PASSWORD=change-me \
-  toolize
+  ghcr.io/kouskous/toolize:latest
 ```
 
 Notes:
