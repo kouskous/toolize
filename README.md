@@ -113,8 +113,24 @@ Open `http://localhost:5173` for the dev UI.
 toolize
 ├── backend    Spring Boot (WebFlux) + swagger-parser + dynamic MCP server
 ├── frontend   Vue 3 + Vite + TypeScript + Tailwind
+├── website    Static marketing site (no build step - plain HTML/CSS/JS)
 └── Dockerfile multi-stage build producing a single toolize.jar
 ```
+
+## Marketing website analytics
+
+`website/index.html` ships with a [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/)
+beacon script - free, cookieless, no consent banner required. It needs a
+site-specific token before it reports any traffic:
+
+1. Sign up at [dash.cloudflare.com](https://dash.cloudflare.com) (no card required).
+2. Go to **Analytics & Logs → Web Analytics → Add a site**, enter the domain
+   the site is deployed to, and copy the token from the generated snippet.
+3. Replace `YOUR_CLOUDFLARE_BEACON_TOKEN` in `website/index.html`'s `<head>`
+   with that token.
+
+Traffic then shows up under the same Cloudflare dashboard page - visits,
+top pages, referrers, and countries - with no code beyond the one script tag.
 
 ## Notes on this implementation
 
