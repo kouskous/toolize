@@ -113,8 +113,20 @@ Open `http://localhost:5173` for the dev UI.
 toolize
 ├── backend    Spring Boot (WebFlux) + swagger-parser + dynamic MCP server
 ├── frontend   Vue 3 + Vite + TypeScript + Tailwind
+├── website    Static marketing site (no build step - plain HTML/CSS/JS)
 └── Dockerfile multi-stage build producing a single toolize.jar
 ```
+
+## Marketing website analytics
+
+`website/index.html` ships with a [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/)
+beacon script - free, cookieless, no consent banner required - already wired
+to the site's Cloudflare account (added via **Analytics & Logs → Web
+Analytics → Add a site**, tracking the `kouskous.github.io` GitHub Pages
+hostname).
+
+Traffic shows up under that same Cloudflare dashboard page - visits,
+top pages, referrers, and countries - with no code beyond the one script tag.
 
 ## Notes on this implementation
 
