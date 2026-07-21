@@ -9,8 +9,13 @@ no code, no restart.
 
 ```bash
 docker build -t toolize .
-docker run -p 8080:8080 -v toolize-data:/data toolize
+docker run -p 8080:8080 -v toolize-data:/data \
+  -e TOOLIZE_ADMIN_PASSWORD=change-me \
+  toolize
 ```
+
+`TOOLIZE_ADMIN_PASSWORD` is required — Toolize ships with no default admin
+password and refuses to start without one.
 
 Then open:
 
@@ -39,6 +44,7 @@ variables; no image rebuild needed.
 
 ```bash
 docker run -p 8080:8080 -v toolize-data:/data \
+  -e TOOLIZE_ADMIN_PASSWORD=change-me \
   -e TOOLIZE_DB_TYPE=POSTGRESQL \
   -e TOOLIZE_DB_HOST=db.example.com \
   -e TOOLIZE_DB_PORT=5432 \
@@ -52,6 +58,7 @@ docker run -p 8080:8080 -v toolize-data:/data \
 
 ```bash
 docker run -p 8080:8080 -v toolize-data:/data \
+  -e TOOLIZE_ADMIN_PASSWORD=change-me \
   -e TOOLIZE_DB_TYPE=MYSQL \
   -e TOOLIZE_DB_HOST=db.example.com \
   -e TOOLIZE_DB_PORT=3306 \
@@ -65,6 +72,7 @@ docker run -p 8080:8080 -v toolize-data:/data \
 
 ```bash
 docker run -p 8080:8080 -v toolize-data:/data \
+  -e TOOLIZE_ADMIN_PASSWORD=change-me \
   -e TOOLIZE_DB_TYPE=ORACLE \
   -e TOOLIZE_DB_HOST=db.example.com \
   -e TOOLIZE_DB_PORT=1521 \
