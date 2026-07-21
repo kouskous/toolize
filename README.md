@@ -3,7 +3,7 @@
 Import an OpenAPI specification and instantly expose the API as MCP tools —
 no code, no restart.
 
-🌐 [Landing page](https://kouskous.github.io/toolize/)
+🌐 [Landing page](https://toolize.app)
 
 ## Quick start (Docker)
 
@@ -137,10 +137,12 @@ toolize
 ## Marketing website analytics
 
 `website/index.html` ships with a [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/)
-beacon script - free, cookieless, no consent banner required - already wired
-to the site's Cloudflare account (added via **Analytics & Logs → Web
-Analytics → Add a site**, tracking the `kouskous.github.io` GitHub Pages
-hostname).
+beacon script - free, cookieless, no consent banner required - wired to the
+site's Cloudflare account via **Analytics & Logs → Web Analytics → Add a
+site**. That site was originally added tracking the `kouskous.github.io`
+GitHub Pages hostname; now that the custom domain is `toolize.app` (see
+`website/CNAME`), add `toolize.app` as its own site in that same dashboard
+so traffic keeps being attributed correctly.
 
 Traffic shows up under that same Cloudflare dashboard page - visits,
 top pages, referrers, and countries - with no code beyond the one script tag.
