@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Docker &amp; deployment — Toolize Docs</title>
+<meta name="description" content="Connect Toolize to PostgreSQL, MySQL, or Oracle in production, run it behind Kubernetes with multiple replicas, and configure it with environment variables." />
+<link rel="canonical" href="https://toolize.app/docs/docker.html" />
+<meta name="robots" content="index, follow" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://toolize.app/docs/docker.html" />
+<meta property="og:site_name" content="Toolize" />
+<meta property="og:title" content="Docker &amp; deployment — Toolize Docs" />
+<meta property="og:description" content="Connect Toolize to PostgreSQL, MySQL, or Oracle in production, run it behind Kubernetes with multiple replicas, and configure it with environment variables." />
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%236D5CFF%22/><polygon points=%2250,16 57,50 50,84 43,50%22 fill=%22white%22/><polygon points=%2216,50 50,57 84,50 50,43%22 fill=%22white%22/></svg>" />
+<link rel="stylesheet" href="../style.css" />
+
+<!-- Cloudflare Web Analytics -->
+<script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "50f7057b6871425490f6a96e8d167bba"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="../index.html#top" class="brand">
+      <span class="brand-mark">
+        <svg viewBox="0 0 100 100" fill="white"><polygon points="50,10 60,50 50,90 40,50"/><polygon points="10,50 50,60 90,50 50,40"/></svg>
+      </span>
+      <span class="brand-name">Toolize</span>
+    </a>
+    <nav class="nav-links">
+      <a href="../index.html#how">How it works</a>
+      <a href="../index.html#quickstart">Quick start</a>
+      <a href="./">Docs</a>
+      <a href="https://github.com/kouskous/toolize" class="nav-cta" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="docs-shell">
+    <aside class="docs-sidebar">
+      <p class="docs-sidebar-title">Documentation</p>
+      <ul>
+        <li><a href="./">Overview</a></li>
+        <li><a href="getting-started.html">Getting started</a></li>
+        <li><a href="docker.html" class="active">Docker &amp; deployment</a></li>
+        <li><a href="authentication.html">Authentication</a></li>
+        <li><a href="openapi.html">OpenAPI import</a></li>
+      </ul>
+    </aside>
+
+    <article class="docs-content">
+      <h1>Docker &amp; deployment</h1>
+      <p class="docs-lead">
+        Zero-config by default, and switchable to a real production database
+        with environment variables only - no image rebuild, no code change.
+      </p>
+
+      <h2>Required: an admin password</h2>
+      <p>
+        Toolize ships with no default admin credential and refuses to start
+        without <code>TOOLIZE_ADMIN_PASSWORD</code> set explicitly. This is
+        deliberate: a well-known default password is the single most common
+        way self-hosted tools get compromised.
+      </p>
+      <div class="docs-callout">
+        <code>TOOLIZE_ADMIN_USERNAME</code> is optional and defaults to
+        <code>admin</code> - only the password is required.
+      </div>
+
+      <h2>Default: embedded database</h2>
+      <p>
+        With no further configuration, Toolize stores everything in an
+        embedded, file-based H2 database under <code>/data</code> - ideal for
+        trying it out, small deployments, or a single-instance self-host.
+      </p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span>terminal</span>
+          <button class="copy-btn" data-copy-target="cmd-default">Copy</button>
+        </div>
+        <pre id="cmd-default"><code>docker run -p 8080:8080 -v toolize-data:/data \
+  -e TOOLIZE_ADMIN_PASSWORD=change-me \
+  ghcr.io/kouskous/toolize:latest</code></pre>
+      </div>
+
+      <h2>Production: PostgreSQL, MySQL, or Oracle</h2>
+      <p>
+        Set <code>TOOLIZE_DB_TYPE</code> and a handful of matching variables
+        to point Toolize at a real database instead:
+      </p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span>terminal · PostgreSQL</span>
+          <button class="copy-btn" data-copy-target="cmd-pg">Copy</button>
+        </div>
+        <pre id="cmd-pg"><code>docker run -p 8080:8080 -v toolize-data:/data \
+  -e TOOLIZE_ADMIN_PASSWORD=change-me \
+  -e TOOLIZE_DB_TYPE=POSTGRESQL \
+  -e TOOLIZE_DB_HOST=db.example.com \
+  -e TOOLIZE_DB_PORT=5432 \
+  -e TOOLIZE_DB_NAME=toolize \
+  -e TOOLIZE_DB_USERNAME=toolize \
+  -e TOOLIZE_DB_PASSWORD=change-me \
+  ghcr.io/kouskous/toolize:latest</code></pre>
+      </div>
+      <p>
+        <code>TOOLIZE_DB_TYPE</code> also accepts <code>MYSQL</code> and
+        <code>ORACLE</code> - same variables, same command shape.
+      </p>
+
+      <h3>Environment variables reference</h3>
+      <table>
+        <thead>
+          <tr><th>Variable</th><th>Required</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>TOOLIZE_ADMIN_PASSWORD</code></td><td>Yes</td><td>No default - Toolize won't start without it.</td></tr>
+          <tr><td><code>TOOLIZE_ADMIN_USERNAME</code></td><td>No</td><td>Defaults to <code>admin</code>.</td></tr>
+          <tr><td><code>TOOLIZE_DB_TYPE</code></td><td>No</td><td><code>POSTGRESQL</code>, <code>MYSQL</code>, or <code>ORACLE</code>. Omit to keep the embedded H2 database.</td></tr>
+          <tr><td><code>TOOLIZE_DB_HOST</code></td><td>With <code>TOOLIZE_DB_TYPE</code></td><td>Use <code>host.docker.internal</code> for a database on the host machine.</td></tr>
+          <tr><td><code>TOOLIZE_DB_PORT</code></td><td>No</td><td>Defaults to the database's standard port (5432 / 3306 / 1521).</td></tr>
+          <tr><td><code>TOOLIZE_DB_NAME</code></td><td>With <code>TOOLIZE_DB_TYPE</code></td><td>&nbsp;</td></tr>
+          <tr><td><code>TOOLIZE_DB_USERNAME</code> / <code>TOOLIZE_DB_PASSWORD</code></td><td>With <code>TOOLIZE_DB_TYPE</code></td><td>&nbsp;</td></tr>
+          <tr><td><code>TOOLIZE_DATA_DIR</code></td><td>No</td><td>Defaults to <code>/data</code>; where the embedded database and logs live.</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Running multiple replicas</h2>
+      <p>
+        Toolize is safe to run as several replicas behind a load balancer,
+        pointed at the same production database:
+      </p>
+      <ul>
+        <li>Every instance re-reads all projects from the shared database and refreshes its in-memory tool registry every 15 seconds, so a change made through one replica (a new import, an endpoint toggle, a description edit) reaches every other replica without a restart.</li>
+        <li>Per-tool usage stats (call counts, error rate, recent calls) are stored in the shared database too, so every replica reports the same numbers.</li>
+        <li>Because configuration is plain environment variables rather than a file on local disk, a Kubernetes Deployment can source them from a Secret and every pod connects identically - nothing is tied to any one pod's local storage.</li>
+      </ul>
+
+      <h2>Building from source</h2>
+      <p>Prefer to build the image yourself instead of pulling the published one:</p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span>terminal</span>
+          <button class="copy-btn" data-copy-target="cmd-build">Copy</button>
+        </div>
+        <pre id="cmd-build"><code>docker build -t toolize .
+docker run -p 8080:8080 -v toolize-data:/data \
+  -e TOOLIZE_ADMIN_PASSWORD=change-me \
+  toolize</code></pre>
+      </div>
+
+      <div class="docs-nav-links">
+        <a href="getting-started.html">← Getting started</a>
+        <a href="authentication.html">Authentication →</a>
+      </div>
+    </article>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span>Toolize</span>
+    <a href="https://github.com/kouskous/toolize" target="_blank" rel="noopener">github.com/kouskous/toolize</a>
+  </div>
+</footer>
+
+<script src="../script.js"></script>
+</body>
+</html>

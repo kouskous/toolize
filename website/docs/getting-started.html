@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Getting started — Toolize Docs</title>
+<meta name="description" content="Run Toolize with one Docker command, import your first OpenAPI spec, and connect an MCP client like Claude Desktop or Cursor." />
+<link rel="canonical" href="https://toolize.app/docs/getting-started.html" />
+<meta name="robots" content="index, follow" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://toolize.app/docs/getting-started.html" />
+<meta property="og:site_name" content="Toolize" />
+<meta property="og:title" content="Getting started — Toolize Docs" />
+<meta property="og:description" content="Run Toolize with one Docker command, import your first OpenAPI spec, and connect an MCP client like Claude Desktop or Cursor." />
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%236D5CFF%22/><polygon points=%2250,16 57,50 50,84 43,50%22 fill=%22white%22/><polygon points=%2216,50 50,57 84,50 50,43%22 fill=%22white%22/></svg>" />
+<link rel="stylesheet" href="../style.css" />
+
+<!-- Cloudflare Web Analytics -->
+<script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "50f7057b6871425490f6a96e8d167bba"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="../index.html#top" class="brand">
+      <span class="brand-mark">
+        <svg viewBox="0 0 100 100" fill="white"><polygon points="50,10 60,50 50,90 40,50"/><polygon points="10,50 50,60 90,50 50,40"/></svg>
+      </span>
+      <span class="brand-name">Toolize</span>
+    </a>
+    <nav class="nav-links">
+      <a href="../index.html#how">How it works</a>
+      <a href="../index.html#quickstart">Quick start</a>
+      <a href="./">Docs</a>
+      <a href="https://github.com/kouskous/toolize" class="nav-cta" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="docs-shell">
+    <aside class="docs-sidebar">
+      <p class="docs-sidebar-title">Documentation</p>
+      <ul>
+        <li><a href="./">Overview</a></li>
+        <li><a href="getting-started.html" class="active">Getting started</a></li>
+        <li><a href="docker.html">Docker &amp; deployment</a></li>
+        <li><a href="authentication.html">Authentication</a></li>
+        <li><a href="openapi.html">OpenAPI import</a></li>
+      </ul>
+    </aside>
+
+    <article class="docs-content">
+      <h1>Getting started</h1>
+      <p class="docs-lead">
+        One dependency: Docker. Everything else - the database, the login,
+        the generated tools - is ready as soon as the container starts.
+      </p>
+
+      <h2>1. Run Toolize</h2>
+      <p>
+        Toolize requires an admin password to be set explicitly - it ships
+        with no default credential, and refuses to start without one.
+      </p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span>terminal</span>
+          <button class="copy-btn" data-copy-target="cmd-run">Copy</button>
+        </div>
+        <pre id="cmd-run"><code>docker pull ghcr.io/kouskous/toolize:latest
+docker run -p 8080:8080 -v toolize-data:/data \
+  -e TOOLIZE_ADMIN_PASSWORD=change-me \
+  ghcr.io/kouskous/toolize:latest</code></pre>
+      </div>
+      <p>
+        This is enough to try Toolize immediately: it stores everything in an
+        embedded database, no external database to stand up. See
+        <a href="docker.html">Docker &amp; deployment</a> for connecting a real
+        PostgreSQL/MySQL/Oracle database in production.
+      </p>
+
+      <h2>2. Open the dashboard</h2>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span>url</span>
+          <button class="copy-btn" data-copy-target="cmd-url">Copy</button>
+        </div>
+        <pre id="cmd-url"><code>http://localhost:8080</code></pre>
+      </div>
+      <p>
+        Log in with the admin username (<code>admin</code> by default, or
+        whatever <code>TOOLIZE_ADMIN_USERNAME</code> was set to) and the
+        password from step 1.
+      </p>
+
+      <h2>3. Import an OpenAPI spec</h2>
+      <p>
+        Paste an OpenAPI/Swagger URL, or upload a YAML/JSON file directly.
+        Toolize parses every endpoint, then lets you choose exactly which
+        ones become MCP tools - see
+        <a href="openapi.html">OpenAPI import</a> for the full details.
+      </p>
+
+      <h2>4. Connect an MCP client</h2>
+      <p>
+        The generated tools are immediately available, no restart required:
+      </p>
+      <div class="code-block">
+        <div class="code-block-header">
+          <span>url</span>
+          <button class="copy-btn" data-copy-target="cmd-mcp">Copy</button>
+        </div>
+        <pre id="cmd-mcp"><code>http://localhost:8080/mcp</code></pre>
+      </div>
+      <p>
+        Point Claude Desktop, Cursor, or any MCP client that speaks the
+        Streamable HTTP JSON-RPC 2.0 transport at that URL.
+      </p>
+
+      <div class="docs-nav-links">
+        <span></span>
+        <a href="docker.html">Docker &amp; deployment →</a>
+      </div>
+    </article>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span>Toolize</span>
+    <a href="https://github.com/kouskous/toolize" target="_blank" rel="noopener">github.com/kouskous/toolize</a>
+  </div>
+</footer>
+
+<script src="../script.js"></script>
+</body>
+</html>

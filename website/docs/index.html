@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Documentation — Toolize</title>
+<meta name="description" content="Toolize documentation: getting started, Docker deployment, authentication, and how OpenAPI import works." />
+<link rel="canonical" href="https://toolize.app/docs/" />
+<meta name="robots" content="index, follow" />
+
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://toolize.app/docs/" />
+<meta property="og:site_name" content="Toolize" />
+<meta property="og:title" content="Documentation — Toolize" />
+<meta property="og:description" content="Toolize documentation: getting started, Docker deployment, authentication, and how OpenAPI import works." />
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%236D5CFF%22/><polygon points=%2250,16 57,50 50,84 43,50%22 fill=%22white%22/><polygon points=%2216,50 50,57 84,50 50,43%22 fill=%22white%22/></svg>" />
+<link rel="stylesheet" href="../style.css" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is Toolize?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Toolize is a self-hosted tool that imports an OpenAPI/Swagger specification and instantly exposes the API as MCP (Model Context Protocol) tools, with no code to write and nothing to restart."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is Toolize free and open source?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Toolize is MIT-licensed and self-hosted - you run it yourself with Docker, and the source is available on GitHub."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which databases does Toolize support?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "An embedded H2 database by default, with no setup required. For production, PostgreSQL, MySQL, and Oracle are supported by setting a few TOOLIZE_DB_* environment variables, with no image rebuild needed."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which authentication types can Toolize call APIs with?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "API key (header or query), bearer token, HTTP basic auth, and OAuth2 client credentials (with automatic token refresh and caching), plus custom static headers stacked on top. Toolize also detects the right type automatically from the spec's declared security scheme."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which MCP clients work with Toolize?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Any MCP client that speaks the Streamable HTTP JSON-RPC 2.0 transport, including Claude Desktop and Cursor - point it at your Toolize instance's /mcp URL."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does importing a spec require restarting Toolize?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Generated tools are immediately available on /mcp as soon as an import finishes, and any later change to endpoint selection or tool descriptions takes effect without a restart."
+      }
+    }
+  ]
+}
+</script>
+
+<!-- Cloudflare Web Analytics -->
+<script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "50f7057b6871425490f6a96e8d167bba"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="../index.html#top" class="brand">
+      <span class="brand-mark">
+        <svg viewBox="0 0 100 100" fill="white"><polygon points="50,10 60,50 50,90 40,50"/><polygon points="10,50 50,60 90,50 50,40"/></svg>
+      </span>
+      <span class="brand-name">Toolize</span>
+    </a>
+    <nav class="nav-links">
+      <a href="../index.html#how">How it works</a>
+      <a href="../index.html#quickstart">Quick start</a>
+      <a href="./" class="active">Docs</a>
+      <a href="https://github.com/kouskous/toolize" class="nav-cta" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="docs-shell">
+    <aside class="docs-sidebar">
+      <p class="docs-sidebar-title">Documentation</p>
+      <ul>
+        <li><a href="./" class="active">Overview</a></li>
+        <li><a href="getting-started.html">Getting started</a></li>
+        <li><a href="docker.html">Docker &amp; deployment</a></li>
+        <li><a href="authentication.html">Authentication</a></li>
+        <li><a href="openapi.html">OpenAPI import</a></li>
+      </ul>
+    </aside>
+
+    <article class="docs-content">
+      <h1>Documentation</h1>
+      <p class="docs-lead">
+        Everything you need to self-host Toolize, connect an MCP client, and
+        turn any OpenAPI specification into working tools.
+      </p>
+
+      <div class="docs-card-grid">
+        <a class="docs-card" href="getting-started.html">
+          <h3>Getting started</h3>
+          <p>Run Toolize with Docker, import your first spec, and connect an MCP client - in under a minute.</p>
+        </a>
+        <a class="docs-card" href="docker.html">
+          <h3>Docker &amp; deployment</h3>
+          <p>The embedded database, production PostgreSQL/MySQL/Oracle setup, environment variables, and scaling.</p>
+        </a>
+        <a class="docs-card" href="authentication.html">
+          <h3>Authentication</h3>
+          <p>The auth types Toolize speaks when calling your API, and how spec-based auto-detection works.</p>
+        </a>
+        <a class="docs-card" href="openapi.html">
+          <h3>OpenAPI import</h3>
+          <p>What happens when you import a spec: endpoint selection, tool generation, and customization.</p>
+        </a>
+      </div>
+
+      <h2>Frequently asked questions</h2>
+      <div class="docs-faq">
+        <div class="docs-faq-item">
+          <h3>What is Toolize?</h3>
+          <p>Toolize is a self-hosted tool that imports an OpenAPI/Swagger specification and instantly exposes the API as MCP (Model Context Protocol) tools, with no code to write and nothing to restart.</p>
+        </div>
+        <div class="docs-faq-item">
+          <h3>Is Toolize free and open source?</h3>
+          <p>Yes. Toolize is <a href="https://github.com/kouskous/toolize/blob/main/LICENSE" target="_blank" rel="noopener">MIT-licensed</a> and self-hosted - you run it yourself with Docker, and the source is available on <a href="https://github.com/kouskous/toolize" target="_blank" rel="noopener">GitHub</a>.</p>
+        </div>
+        <div class="docs-faq-item">
+          <h3>Which databases does Toolize support?</h3>
+          <p>An embedded H2 database by default, with no setup required. For production, PostgreSQL, MySQL, and Oracle are supported by setting a few <code>TOOLIZE_DB_*</code> environment variables, with no image rebuild needed. See <a href="docker.html">Docker &amp; deployment</a>.</p>
+        </div>
+        <div class="docs-faq-item">
+          <h3>Which authentication types can Toolize call APIs with?</h3>
+          <p>API key (header or query), bearer token, HTTP basic auth, and OAuth2 client credentials (with automatic token refresh and caching), plus custom static headers stacked on top. Toolize also detects the right type automatically from the spec's declared security scheme. See <a href="authentication.html">Authentication</a>.</p>
+        </div>
+        <div class="docs-faq-item">
+          <h3>Which MCP clients work with Toolize?</h3>
+          <p>Any MCP client that speaks the Streamable HTTP JSON-RPC 2.0 transport, including Claude Desktop and Cursor - point it at your Toolize instance's <code>/mcp</code> URL.</p>
+        </div>
+        <div class="docs-faq-item">
+          <h3>Does importing a spec require restarting Toolize?</h3>
+          <p>No. Generated tools are immediately available on <code>/mcp</code> as soon as an import finishes, and any later change to endpoint selection or tool descriptions takes effect without a restart.</p>
+        </div>
+      </div>
+    </article>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span>Toolize</span>
+    <a href="https://github.com/kouskous/toolize" target="_blank" rel="noopener">github.com/kouskous/toolize</a>
+  </div>
+</footer>
+
+<script src="../script.js"></script>
+</body>
+</html>
