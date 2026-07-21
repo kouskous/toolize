@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OpenAPI import — Toolize Docs</title>
+<meta name="description" content="How Toolize turns an OpenAPI/Swagger spec into MCP tools: endpoint selection, operationId handling, tool customization, and usage analytics." />
+<link rel="canonical" href="https://toolize.app/docs/openapi.html" />
+<meta name="robots" content="index, follow" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://toolize.app/docs/openapi.html" />
+<meta property="og:site_name" content="Toolize" />
+<meta property="og:title" content="OpenAPI import — Toolize Docs" />
+<meta property="og:description" content="How Toolize turns an OpenAPI/Swagger spec into MCP tools: endpoint selection, operationId handling, tool customization, and usage analytics." />
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%236D5CFF%22/><polygon points=%2250,16 57,50 50,84 43,50%22 fill=%22white%22/><polygon points=%2216,50 50,57 84,50 50,43%22 fill=%22white%22/></svg>" />
+<link rel="stylesheet" href="../style.css" />
+
+<!-- Cloudflare Web Analytics -->
+<script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "50f7057b6871425490f6a96e8d167bba"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="../index.html#top" class="brand">
+      <span class="brand-mark">
+        <svg viewBox="0 0 100 100" fill="white"><polygon points="50,10 60,50 50,90 40,50"/><polygon points="10,50 50,60 90,50 50,40"/></svg>
+      </span>
+      <span class="brand-name">Toolize</span>
+    </a>
+    <nav class="nav-links">
+      <a href="../index.html#how">How it works</a>
+      <a href="../index.html#quickstart">Quick start</a>
+      <a href="./">Docs</a>
+      <a href="https://github.com/kouskous/toolize" class="nav-cta" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="docs-shell">
+    <aside class="docs-sidebar">
+      <p class="docs-sidebar-title">Documentation</p>
+      <ul>
+        <li><a href="./">Overview</a></li>
+        <li><a href="getting-started.html">Getting started</a></li>
+        <li><a href="docker.html">Docker &amp; deployment</a></li>
+        <li><a href="authentication.html">Authentication</a></li>
+        <li><a href="openapi.html" class="active">OpenAPI import</a></li>
+      </ul>
+    </aside>
+
+    <article class="docs-content">
+      <h1>OpenAPI import</h1>
+      <p class="docs-lead">
+        What actually happens between pasting a spec and having callable MCP
+        tools.
+      </p>
+
+      <h2>Bringing your spec in</h2>
+      <p>
+        Paste an OpenAPI/Swagger URL, or upload a YAML/JSON file directly.
+        Toolize parses every endpoint, schema, parameter, and declared
+        security scheme.
+      </p>
+
+      <h2>Choosing which endpoints become tools</h2>
+      <p>
+        Not every endpoint should be exposed to an AI agent. Right after
+        import, pick exactly which ones to turn into MCP tools - and change
+        that selection later from the project's page, any time, without
+        re-importing anything.
+      </p>
+
+      <h2>How operationId becomes a tool name</h2>
+      <p>
+        Each generated tool's name comes from the operation's
+        <code>operationId</code>. If the spec doesn't declare one for a given
+        endpoint, Toolize generates one from its method and path.
+      </p>
+      <p>
+        Real-world specs don't always keep <code>operationId</code> unique
+        across every endpoint, even though the OpenAPI specification says
+        they should. Toolize detects any collision and renames every
+        duplicate after the first occurrence (for example, a repeated
+        <code>list</code> becomes <code>list_2</code>) - deterministically,
+        so re-parsing the same spec always produces the same names. This
+        keeps every endpoint independently selectable and every tool
+        independently addressable, even when the source spec itself doesn't
+        guarantee uniqueness.
+      </p>
+
+      <h2>Writing tool descriptions your agent understands</h2>
+      <p>
+        Generated tools start from the spec's own summary and description
+        fields - but specs are written for humans, not agents, and plenty
+        say nothing useful at all. From any tool's detail page, override its
+        description or any parameter's hint: when to use it, what a
+        parameter really means, when <em>not</em> to call it. Changes apply
+        immediately on <code>/mcp</code>, with no re-import required.
+      </p>
+      <p>The description Toolize actually uses, in order of preference:</p>
+      <ol>
+        <li>Your custom description, if you've set one.</li>
+        <li>The spec's own <code>description</code> field for that operation.</li>
+        <li>The spec's <code>summary</code> field.</li>
+      </ol>
+
+      <h2>Usage analytics</h2>
+      <p>
+        Every tool call - whether from a real MCP client or the "Execute"
+        button in the UI - is tracked: total calls, error rate, average
+        latency, and the most recent calls with their status and timing.
+        Available per tool and rolled up per project.
+      </p>
+
+      <div class="docs-nav-links">
+        <a href="authentication.html">← Authentication</a>
+        <span></span>
+      </div>
+    </article>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span>Toolize</span>
+    <a href="https://github.com/kouskous/toolize" target="_blank" rel="noopener">github.com/kouskous/toolize</a>
+  </div>
+</footer>
+
+<script src="../script.js"></script>
+</body>
+</html>

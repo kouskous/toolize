@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Authentication — Toolize Docs</title>
+<meta name="description" content="The authentication types Toolize supports when calling your API: API key, bearer token, basic auth, and OAuth2 client credentials, with automatic detection from the spec." />
+<link rel="canonical" href="https://toolize.app/docs/authentication.html" />
+<meta name="robots" content="index, follow" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://toolize.app/docs/authentication.html" />
+<meta property="og:site_name" content="Toolize" />
+<meta property="og:title" content="Authentication — Toolize Docs" />
+<meta property="og:description" content="The authentication types Toolize supports when calling your API: API key, bearer token, basic auth, and OAuth2 client credentials, with automatic detection from the spec." />
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%236D5CFF%22/><polygon points=%2250,16 57,50 50,84 43,50%22 fill=%22white%22/><polygon points=%2216,50 50,57 84,50 50,43%22 fill=%22white%22/></svg>" />
+<link rel="stylesheet" href="../style.css" />
+
+<!-- Cloudflare Web Analytics -->
+<script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "50f7057b6871425490f6a96e8d167bba"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="../index.html#top" class="brand">
+      <span class="brand-mark">
+        <svg viewBox="0 0 100 100" fill="white"><polygon points="50,10 60,50 50,90 40,50"/><polygon points="10,50 50,60 90,50 50,40"/></svg>
+      </span>
+      <span class="brand-name">Toolize</span>
+    </a>
+    <nav class="nav-links">
+      <a href="../index.html#how">How it works</a>
+      <a href="../index.html#quickstart">Quick start</a>
+      <a href="./">Docs</a>
+      <a href="https://github.com/kouskous/toolize" class="nav-cta" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="docs-shell">
+    <aside class="docs-sidebar">
+      <p class="docs-sidebar-title">Documentation</p>
+      <ul>
+        <li><a href="./">Overview</a></li>
+        <li><a href="getting-started.html">Getting started</a></li>
+        <li><a href="docker.html">Docker &amp; deployment</a></li>
+        <li><a href="authentication.html" class="active">Authentication</a></li>
+        <li><a href="openapi.html">OpenAPI import</a></li>
+      </ul>
+    </aside>
+
+    <article class="docs-content">
+      <h1>Authentication</h1>
+      <p class="docs-lead">
+        Toolize speaks every common way an API authenticates a caller, and
+        suggests the right one automatically from the spec.
+      </p>
+
+      <h2>Supported authentication types</h2>
+      <table>
+        <thead>
+          <tr><th>Type</th><th>How it's used</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>None</td><td>No credentials sent - for public APIs.</td></tr>
+          <tr><td>API key</td><td>A static key sent as a header or a query parameter, whichever the API expects.</td></tr>
+          <tr><td>Bearer token</td><td>A static token sent as <code>Authorization: Bearer &lt;token&gt;</code>.</td></tr>
+          <tr><td>HTTP Basic</td><td>A username/password pair sent as <code>Authorization: Basic ...</code>.</td></tr>
+          <tr><td>OAuth2 client credentials</td><td>Toolize fetches an access token from the API's token URL using a client id/secret, caches it, and refreshes it automatically before it expires.</td></tr>
+        </tbody>
+      </table>
+      <p>
+        On top of any of these, custom static headers can be stacked - useful
+        for APIs that need something extra, like a tenant id.
+      </p>
+
+      <h2>Automatic detection from the spec</h2>
+      <p>
+        When importing an OpenAPI spec that declares a
+        <code>securitySchemes</code> object, Toolize reads which scheme is
+        actually required (via the spec's global <code>security</code>
+        requirement) and pre-fills the matching authentication type - so in
+        most cases there's nothing to guess, only credentials to fill in.
+      </p>
+      <ul>
+        <li><code>apiKey</code> schemes map to API key auth, in the same location (header or query) the spec declares.</li>
+        <li><code>http: bearer</code> maps to bearer token; <code>http: basic</code> maps to basic auth.</li>
+        <li><code>oauth2</code> with a <code>clientCredentials</code> flow maps to OAuth2 client credentials, with the token URL pre-filled from the spec.</li>
+      </ul>
+
+      <h2>Changing authentication later</h2>
+      <p>
+        Authentication isn't fixed at import time - update it from the
+        project's page at any time, without re-importing the spec or losing
+        any endpoint selection or tool customization.
+      </p>
+
+      <div class="docs-nav-links">
+        <a href="docker.html">← Docker &amp; deployment</a>
+        <a href="openapi.html">OpenAPI import →</a>
+      </div>
+    </article>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span>Toolize</span>
+    <a href="https://github.com/kouskous/toolize" target="_blank" rel="noopener">github.com/kouskous/toolize</a>
+  </div>
+</footer>
+
+<script src="../script.js"></script>
+</body>
+</html>
