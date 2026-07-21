@@ -3,9 +3,21 @@
 Import an OpenAPI specification and instantly expose the API as MCP tools —
 no code, no restart.
 
-🌐 [Landing page](https://kouskous.github.io/toolize/)
+🌐 [Landing page](https://toolize.app)
 
 ## Quick start (Docker)
+
+```bash
+docker pull ghcr.io/kouskous/toolize:latest
+docker run -p 8080:8080 -v toolize-data:/data \
+  -e TOOLIZE_ADMIN_PASSWORD=change-me \
+  ghcr.io/kouskous/toolize:latest
+```
+
+`TOOLIZE_ADMIN_PASSWORD` is required — Toolize ships with no default admin
+password and refuses to start without one.
+
+Prefer to build from source instead of pulling the published image?
 
 ```bash
 docker build -t toolize .
@@ -13,9 +25,6 @@ docker run -p 8080:8080 -v toolize-data:/data \
   -e TOOLIZE_ADMIN_PASSWORD=change-me \
   toolize
 ```
-
-`TOOLIZE_ADMIN_PASSWORD` is required — Toolize ships with no default admin
-password and refuses to start without one.
 
 Then open:
 
@@ -51,7 +60,7 @@ docker run -p 8080:8080 -v toolize-data:/data \
   -e TOOLIZE_DB_NAME=toolize \
   -e TOOLIZE_DB_USERNAME=toolize \
   -e TOOLIZE_DB_PASSWORD=change-me \
-  toolize
+  ghcr.io/kouskous/toolize:latest
 ```
 
 **MySQL**
@@ -65,7 +74,7 @@ docker run -p 8080:8080 -v toolize-data:/data \
   -e TOOLIZE_DB_NAME=toolize \
   -e TOOLIZE_DB_USERNAME=toolize \
   -e TOOLIZE_DB_PASSWORD=change-me \
-  toolize
+  ghcr.io/kouskous/toolize:latest
 ```
 
 **Oracle**
@@ -79,7 +88,7 @@ docker run -p 8080:8080 -v toolize-data:/data \
   -e TOOLIZE_DB_NAME=orclpdb1 \
   -e TOOLIZE_DB_USERNAME=toolize \
   -e TOOLIZE_DB_PASSWORD=change-me \
-  toolize
+  ghcr.io/kouskous/toolize:latest
 ```
 
 Notes:
@@ -128,10 +137,12 @@ toolize
 ## Marketing website analytics
 
 `website/index.html` ships with a [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/)
-beacon script - free, cookieless, no consent banner required - already wired
-to the site's Cloudflare account (added via **Analytics & Logs → Web
-Analytics → Add a site**, tracking the `kouskous.github.io` GitHub Pages
-hostname).
+beacon script - free, cookieless, no consent banner required - wired to the
+site's Cloudflare account via **Analytics & Logs → Web Analytics → Add a
+site**. That site was originally added tracking the `kouskous.github.io`
+GitHub Pages hostname; now that the custom domain is `toolize.app` (see
+`website/CNAME`), add `toolize.app` as its own site in that same dashboard
+so traffic keeps being attributed correctly.
 
 Traffic shows up under that same Cloudflare dashboard page - visits,
 top pages, referrers, and countries - with no code beyond the one script tag.
